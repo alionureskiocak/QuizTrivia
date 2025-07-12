@@ -4,5 +4,5 @@ import com.example.quizzy.data.dto.QuestionDto
 
 data class Quiz(
     val responseCode: Int,
-    val questionDtos: List<QuestionDto>
+    val questions: List<Question>
 )

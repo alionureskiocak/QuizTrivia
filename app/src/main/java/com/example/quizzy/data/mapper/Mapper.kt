@@ -19,7 +19,7 @@ fun QuestionDto.toQuestion() : Question{
 fun QuizDto.toQuiz() : Quiz{
     return Quiz(
         responseCode = response_code,
-        questionDtos = questionDtos
+        questions = questionDtos
     )
 }
 

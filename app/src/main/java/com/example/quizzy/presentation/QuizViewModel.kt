@@ -3,20 +3,30 @@ package com.example.quizzy.presentation
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.quizzy.domain.model.Question
 import com.example.quizzy.domain.use_case.GetQuizUseCase
 import com.example.quizzy.util.Resource
 import dagger.hilt.android.HiltAndroidApp
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
-@HiltAndroidApp
+@HiltViewModel
 class QuizViewModel @Inject constructor(
     private val getQuizUseCase: GetQuizUseCase
 ) : ViewModel() {
 
     private val _state = mutableStateOf<QuizState>(QuizState())
     val state : State<QuizState> get() = _state
+
+    init {
+        getQuestions()
+    }
+
     fun getQuestions(){
         getQuizUseCase.invoke().onEach {
             when(it){
@@ -30,7 +40,7 @@ class QuizViewModel @Inject constructor(
                     _state.value = _state.value.copy(questions = it.data?.questions?:emptyList())
                 }
             }
-        }
+        }.launchIn(viewModelScope)
     }
 
     fun isAnswerTrue(selectedChoice : String) : Boolean{

@@ -1,4 +1,4 @@
-package com.example.quizzy.presentation
+package com.example.quizzy.presentation.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
 
-
+            QuizScreen()
 
         }
     }

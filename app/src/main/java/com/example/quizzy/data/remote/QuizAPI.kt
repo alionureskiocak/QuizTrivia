@@ -10,7 +10,9 @@ interface QuizAPI {
 
     @GET("api.php")
     suspend fun getQuestions(
-       @Query("amount") amount : Int = 15,
-       @Query("type") type : String = "multiple"
+       @Query("amount") amount : Int = 50,
+       @Query("type") type : String = "multiple",
+       @Query("difficulty") difficulty : String = "easy",
+       @Query("category") category : String = "9"
     ) : QuizDto
 }

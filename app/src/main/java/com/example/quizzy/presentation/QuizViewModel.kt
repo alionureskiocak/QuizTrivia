@@ -44,6 +44,7 @@ class QuizViewModel @Inject constructor(
 
     fun getNewQuestion() : Question{
         if(_state.value.questions.isNotEmpty()){
+            _state.value.selectedAnswer = null
             val currentQuestion = _state.value.questions[questionCount++]
 
            _state.value =  _state.value.copy(
@@ -59,6 +60,10 @@ class QuizViewModel @Inject constructor(
     fun isAnswerTrue(selectedChoice : String) : Boolean{
         val answer = _state.value.correctAnswer
         return selectedChoice == answer
+    }
+
+    fun onAnswerSelected(selected : String){
+        if(_state.value.selectedAnswer == null) _state.value =_state.value.copy(selectedAnswer = selected)
     }
 
     fun shuffleAnswers(){
@@ -77,6 +82,7 @@ class QuizViewModel @Inject constructor(
 data class QuizState(
     val questions : List<Question> = emptyList(),
     val currentQuestion : Question = Question("","","",listOf(),"",""),
+    var selectedAnswer : String? = null,
     val answerList : List<String> = emptyList(),
     val correctAnswer : String = currentQuestion.correctAnswer,
     val isLoading : Boolean = false,

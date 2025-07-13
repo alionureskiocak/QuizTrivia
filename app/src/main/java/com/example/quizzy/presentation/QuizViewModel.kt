@@ -4,15 +4,12 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.quizzy.domain.model.Question
 import com.example.quizzy.domain.use_case.GetQuizUseCase
 import com.example.quizzy.util.Resource
-import dagger.hilt.android.HiltAndroidApp
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,8 +20,10 @@ class QuizViewModel @Inject constructor(
     private val _state = mutableStateOf<QuizState>(QuizState())
     val state : State<QuizState> get() = _state
 
+    var questionCount = 0
     init {
         getQuestions()
+        getNewQuestion()
     }
 
     fun getQuestions(){
@@ -43,9 +42,27 @@ class QuizViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
+    fun getNewQuestion() : Question{
+        val currentQuestion = _state.value.questions[questionCount++]
+        return currentQuestion
+        _state.value.copy(currentQuestion = currentQuestion)
+        shuffleAnswers()
+    }
+
     fun isAnswerTrue(selectedChoice : String) : Boolean{
-        val answer = _state.value.correnctAnswer
+        val answer = _state.value.correctAnswer
         return selectedChoice == answer
+    }
+
+    fun shuffleAnswers(){
+        val answer = _state.value.correctAnswer
+        val answerList = arrayListOf(answer)
+        val incorrectAnswers = _state.value.currentQuestion.incorrectAnswers
+        incorrectAnswers.forEach {
+            answerList.add(it)
+        }
+        answerList.shuffle()
+        _state.value = _state.value.copy(answerList = answerList)
     }
 
 }
@@ -53,7 +70,8 @@ class QuizViewModel @Inject constructor(
 data class QuizState(
     val questions : List<Question> = emptyList(),
     val currentQuestion : Question = Question("","","",listOf(),"",""),
-    val correnctAnswer : String = currentQuestion.correctAnswer,
+    val answerList : List<String> = emptyList(),
+    val correctAnswer : String = currentQuestion.correctAnswer,
     val isLoading : Boolean = false,
     val errorMsg : String = ""
 )

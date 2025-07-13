@@ -23,7 +23,6 @@ class QuizViewModel @Inject constructor(
     var questionCount = 0
     init {
         getQuestions()
-        getNewQuestion()
     }
 
     fun getQuestions(){
@@ -37,16 +36,24 @@ class QuizViewModel @Inject constructor(
                 }
                 is Resource.Success -> {
                     _state.value = _state.value.copy(questions = it.data?.questions?:emptyList())
+                    getNewQuestion()
                 }
             }
         }.launchIn(viewModelScope)
     }
 
     fun getNewQuestion() : Question{
-        val currentQuestion = _state.value.questions[questionCount++]
-        return currentQuestion
-        _state.value.copy(currentQuestion = currentQuestion)
-        shuffleAnswers()
+        if(_state.value.questions.isNotEmpty()){
+            val currentQuestion = _state.value.questions[questionCount++]
+
+           _state.value =  _state.value.copy(
+               currentQuestion = currentQuestion,
+               correctAnswer = currentQuestion.correctAnswer)
+
+            shuffleAnswers()
+            return currentQuestion
+        }
+       return Question("","","",listOf(),"","")
     }
 
     fun isAnswerTrue(selectedChoice : String) : Boolean{

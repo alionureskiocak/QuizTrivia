@@ -17,7 +17,8 @@ class GetQuizUseCase @Inject constructor(
         emit(Resource.Loading())
         try {
             val result = repository.getQuestions()
-            emit(Resource.Success(result))
+            val finalQuestions = result.questions.filter { it.incorrectAnswers.size == 3 }
+            emit(Resource.Success(result.copy(questions = finalQuestions)))
         }catch (e: Exception){
             emit(Resource.Error(e.localizedMessage?:"Error."))
         }

@@ -7,7 +7,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,74 +25,61 @@ import androidx.compose.ui.unit.sp
 import com.example.quizzy.presentation.QuizViewModel
 
 @Composable
-fun QuizScreen(viewModel : QuizViewModel = hiltViewModel()) {
-
+fun QuizScreen(viewModel: QuizViewModel = hiltViewModel()) {
     val state by viewModel.state
-    val questions = state.questions
+    val answerList = state.answerList
+    val currentQuestion = state.currentQuestion
 
-
-    Column(
+    Surface(
         modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp, Alignment.Top),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Text(
+                text = "Question ${viewModel.questionCount}",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.primary
+            )
 
-        val currentQuestion = state.currentQuestion
-        val answerList = state.answerList
-        Text(text = currentQuestion.questionString,fontSize = 20.sp)
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            Text(
+                text = currentQuestion.questionString,
+                fontSize = 22.sp,
+                lineHeight = 28.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
-            // 1ST BUTTON
-            Button(onClick = {
-                if (viewModel.isAnswerTrue(answerList[0])){
-                    //correct answer
-                }else{
-                    //incorrect answer
+                answerList.forEach { answer ->
+                    Button(
+                        onClick = {
+                            if (viewModel.isAnswerTrue(answer)) {
+                                // correct
+                            } else {
+                                // incorrect
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(text = answer, fontSize = 16.sp)
+                    }
                 }
-            }) {
-                Text(text = answerList[0])
-            }
-            // 2ND BUTTON
-            Button(onClick = {
-                if (viewModel.isAnswerTrue(answerList[1])){
-                    //correct answer
-                }else{
-                    //incorrect answer
-                }
-            }) {
-                Text(text = answerList[1])
-            }
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            // 3ST BUTTON
-            Button(onClick = {
-                if (viewModel.isAnswerTrue(answerList[2])){
-                    //correct answer
-                }else{
-                    //incorrect answer
-                }
-            }) {
-                Text(text = answerList[2])
-            }
-            // 4ND BUTTON
-            Button(onClick = {
-                if (viewModel.isAnswerTrue(answerList[3])){
-                    //correct answer
-                }else{
-                    //incorrect answer
-                }
-            }) {
-                Text(text = answerList[3])
             }
         }
     }
-
-
 }

@@ -1,5 +1,6 @@
 package com.example.quizzy.domain.use_case
 
+import com.example.quizzy.data.mapper.cleaned
 import com.example.quizzy.domain.model.Quiz
 import com.example.quizzy.domain.repository.QuizRepository
 import com.example.quizzy.util.Resource
@@ -19,8 +20,8 @@ class GetQuizUseCase @Inject constructor(
             val result = repository.getQuestions()
             val finalQuestions = result.questions
                 .filter { it.incorrectAnswers.size == 3 }
-                .filter { !it.questionString.contains("quot") }
-                .filter { !it.questionString.contains("#") }
+                .map { it.cleaned() }
+            println("size "+ finalQuestions.size)
             emit(Resource.Success(result.copy(questions = finalQuestions)))
         }catch (e: Exception){
             emit(Resource.Error(e.localizedMessage?:"Error."))

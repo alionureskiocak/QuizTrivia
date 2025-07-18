@@ -4,6 +4,8 @@ import com.example.quizzy.data.dto.QuestionDto
 import com.example.quizzy.data.dto.QuizDto
 import com.example.quizzy.domain.model.Question
 import com.example.quizzy.domain.model.Quiz
+import com.example.quizzy.util.Constants.decodeHtml
+import kotlin.String
 
 fun QuestionDto.toQuestion() : Question{
     return Question(
@@ -20,6 +22,14 @@ fun QuizDto.toQuiz() : Quiz{
     return Quiz(
         responseCode = response_code,
         questions = questionDtos.map { it.toQuestion() }
+    )
+}
+
+fun Question.cleaned(): Question {
+    return this.copy(
+        correctAnswer = correctAnswer.decodeHtml(),
+        incorrectAnswers = incorrectAnswers.map { it.decodeHtml() },
+        questionString = questionString.decodeHtml()
     )
 }
 

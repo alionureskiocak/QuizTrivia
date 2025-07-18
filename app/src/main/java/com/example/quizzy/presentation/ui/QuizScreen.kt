@@ -76,7 +76,6 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel()) {
                         selectedAnswer == null -> MaterialTheme.colorScheme.primary
                         isCorrect -> Color.Green
                         isSelected && !isCorrect -> Color.Red
-                        isCorrect -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
                         else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                     }
 

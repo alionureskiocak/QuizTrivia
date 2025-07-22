@@ -1,6 +1,7 @@
 package com.example.quizzy.presentation
 
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,8 +9,11 @@ import com.example.quizzy.domain.model.Question
 import com.example.quizzy.domain.use_case.GetQuizUseCase
 import com.example.quizzy.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,9 +24,28 @@ class QuizViewModel @Inject constructor(
     private val _state = mutableStateOf<QuizState>(QuizState())
     val state : State<QuizState> get() = _state
 
+    private val _timeLeft = mutableIntStateOf(15)
+    val timeLeft : State<Int> get() = _timeLeft
+    private var timerJob : Job? = null
+
     var questionCount = 0
     init {
         getQuestions()
+    }
+
+    fun startTimer(){
+        timerJob?.cancel()
+        _timeLeft.intValue = 15
+        timerJob = viewModelScope.launch {
+            while (_timeLeft.intValue>0){
+                delay(1000)
+                _timeLeft.intValue --
+            }
+            if(_timeLeft.intValue == 0){
+                delay(2000)
+                getNewQuestion()
+            }
+        }
     }
 
     fun getQuestions(){
@@ -52,18 +75,29 @@ class QuizViewModel @Inject constructor(
                correctAnswer = currentQuestion.correctAnswer)
 
             shuffleAnswers()
+            startTimer()
             return currentQuestion
         }
        return Question("","","",listOf(),"","")
     }
 
-    fun isAnswerTrue(selectedChoice : String) : Boolean{
-        val answer = _state.value.correctAnswer
-        return selectedChoice == answer
+    fun useFiftyJoker() {
+        var jokerCount = _state.value.jokerCount
+        if (jokerCount>0){
+            val answerList = _state.value.answerList.toMutableList()
+            val correct = _state.value.correctAnswer
+            val wrongAnswers = answerList.filter { it != correct }.shuffled().take(1)
+            val newList = listOf(correct) + wrongAnswers
+            val shuffledList = newList.shuffled()
+            jokerCount--
+            _state.value = _state.value.copy(fiftyJokerStayedList = shuffledList, jokerCount = jokerCount)
+        }
     }
+
 
     fun onAnswerSelected(selected : String){
         if(_state.value.selectedAnswer == null) _state.value =_state.value.copy(selectedAnswer = selected)
+        timerJob?.cancel()
     }
 
     fun shuffleAnswers(){
@@ -83,7 +117,9 @@ data class QuizState(
     val questions : List<Question> = emptyList(),
     val currentQuestion : Question = Question("","","",listOf(),"",""),
     var selectedAnswer : String? = null,
-    val answerList : List<String> = emptyList(),
+    val answerList : ArrayList<String> = arrayListOf(),
+    val fiftyJokerStayedList : List<String> = arrayListOf(),
+    var jokerCount : Int = 2,
     val correctAnswer : String = currentQuestion.correctAnswer,
     val isLoading : Boolean = false,
     val errorMsg : String = ""

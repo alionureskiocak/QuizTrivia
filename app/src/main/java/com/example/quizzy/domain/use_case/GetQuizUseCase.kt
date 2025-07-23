@@ -14,10 +14,10 @@ class GetQuizUseCase @Inject constructor(
     private val repository: QuizRepository
 ){
 
-   operator fun invoke() : Flow<Resource<Quiz>> = flow {
+   operator fun invoke(difficulty : String) : Flow<Resource<Quiz>> = flow {
         emit(Resource.Loading())
         try {
-            val result = repository.getQuestions()
+            val result = repository.getQuestions(difficulty)
             val finalQuestions = result.questions
                 .filter { it.incorrectAnswers.size == 3 }
                 .map { it.cleaned() }

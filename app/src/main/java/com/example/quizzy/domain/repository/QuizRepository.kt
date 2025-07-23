@@ -4,5 +4,5 @@ import com.example.quizzy.domain.model.Quiz
 
 interface QuizRepository {
 
-    suspend fun getQuestions() : Quiz
+    suspend fun getQuestions(difficulty : String) : Quiz
 }

@@ -11,7 +11,11 @@ import javax.inject.Inject
 class QuizRepositoryImpl @Inject constructor(
     private val api : QuizAPI
 ) : QuizRepository{
-    override suspend fun getQuestions(): Quiz {
-        return api.getQuestions().toQuiz()
+    override suspend fun getQuestions(difficulty: String): Quiz {
+       return when(difficulty){
+           "easy" ->{api.getEasyQuestions().toQuiz()}
+           "medium"-> {api.getMediumQuestions().toQuiz()}
+           "hard" -> {api.getHardQuestions().toQuiz()}
+           else ->{api.getEasyQuestions().toQuiz()}}
     }
 }

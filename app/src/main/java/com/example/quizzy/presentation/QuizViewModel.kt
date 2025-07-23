@@ -28,9 +28,29 @@ class QuizViewModel @Inject constructor(
     val timeLeft : State<Int> get() = _timeLeft
     private var timerJob : Job? = null
 
-    var questionCount = 0
-    init {
-        getQuestions()
+    private val _startCounter = mutableIntStateOf(3)
+    val startCounter : State<Int> get() = _startCounter
+
+    private val _isCounting = mutableStateOf(false)
+    val isCounting : State<Boolean> get() = _isCounting
+
+    private var counterJob : Job? = null
+
+    fun startCounter(){
+        counterJob?.cancel()
+        _isCounting.value = true
+        _startCounter.intValue = 3
+        counterJob = viewModelScope.launch {
+            while (_startCounter.intValue>0){
+                delay(1000)
+                _startCounter.intValue--
+            }
+            if (_startCounter.intValue == 0){
+                counterJob?.cancel()
+                _isCounting.value = false
+                getNewQuestion()
+            }
+        }
     }
 
     fun startTimer(){
@@ -48,8 +68,8 @@ class QuizViewModel @Inject constructor(
         }
     }
 
-    fun getQuestions(){
-        getQuizUseCase.invoke().onEach {
+    fun getQuestions(difficulty : String){
+        getQuizUseCase.invoke(difficulty).onEach {
             when(it){
                 is Resource.Error -> {
                     _state.value = _state.value.copy(errorMsg = it.message?:"Error.", isLoading = false)
@@ -59,7 +79,6 @@ class QuizViewModel @Inject constructor(
                 }
                 is Resource.Success -> {
                     _state.value = _state.value.copy(questions = it.data?.questions?:emptyList())
-                    getNewQuestion()
                 }
             }
         }.launchIn(viewModelScope)
@@ -68,17 +87,25 @@ class QuizViewModel @Inject constructor(
     fun getNewQuestion() : Question{
         if(_state.value.questions.isNotEmpty()){
             _state.value.selectedAnswer = null
+            var questionCount = _state.value.currentQuestionCount
             val currentQuestion = _state.value.questions[questionCount++]
 
            _state.value =  _state.value.copy(
                currentQuestion = currentQuestion,
-               correctAnswer = currentQuestion.correctAnswer)
+               correctAnswer = currentQuestion.correctAnswer,
+               currentQuestionCount = questionCount
+               )
 
             shuffleAnswers()
             startTimer()
+            println(currentQuestion.difficulty)
             return currentQuestion
         }
        return Question("","","",listOf(),"","")
+    }
+
+    fun rightAnswer(){
+        _state.value = _state.value.copy(correctQuestionCount = _state.value.correctQuestionCount+1)
     }
 
     fun useFiftyJoker() {
@@ -118,6 +145,8 @@ data class QuizState(
     val currentQuestion : Question = Question("","","",listOf(),"",""),
     var selectedAnswer : String? = null,
     val answerList : ArrayList<String> = arrayListOf(),
+    val currentQuestionCount : Int = 0,
+    val correctQuestionCount : Int = 0,
     val fiftyJokerStayedList : List<String> = arrayListOf(),
     var jokerCount : Int = 2,
     val correctAnswer : String = currentQuestion.correctAnswer,

@@ -20,8 +20,10 @@ import com.example.quizzy.presentation.QuizViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.delay
 
+
+
 @Composable
-fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),difficulty : String) {
+fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), difficulty: String) {
     val state by viewModel.state
     val answerList = state.answerList
     val currentQuestion = state.currentQuestion
@@ -39,11 +41,12 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),difficulty : String) {
     val startCounter = viewModel.startCounter
     val isCounting = viewModel.isCounting
 
+    val colorScheme = MaterialTheme.colorScheme
+
     LaunchedEffect(isCounting) {
-        if (isCounting.value == false){
+        if (isCounting.value == false) {
             viewModel.getQuestions(difficulty)
             viewModel.startCounter()
-
         }
     }
 
@@ -52,18 +55,17 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),difficulty : String) {
             delay(2000)
             viewModel.getNewQuestion()
             fiftyJokerEnabled = false
-            println(difficulty)
         }
     }
 
-    if (isCounting.value){
+    if (isCounting.value) {
         StartingScreen(startCounter.value)
-    }else{
+    } else {
         Surface(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 16.dp),
-            color = Color(0xFFF8F8F8),
+            color = colorScheme.background
         ) {
             Column(
                 modifier = Modifier
@@ -71,21 +73,20 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),difficulty : String) {
                     .padding(horizontal = 20.dp, vertical = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                // Progress + soru sayısı
                 LinearProgressIndicator(
-                    progress = questionNumber / 10f,
+                    progress = {questionNumber / 10f},
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(6.dp)
                         .clip(RoundedCornerShape(50)),
-                    color = Color(0xFF4CAF50),
-                    trackColor = Color(0xFFE0E0E0)
+                    color = colorScheme.primary,
+                    trackColor = colorScheme.surfaceVariant
                 )
 
                 Text(
-                    text = "Question ${questionNumber} / 10",
+                    text = "Question $questionNumber / 10",
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = colorScheme.onBackground
                 )
 
                 Text(
@@ -93,7 +94,7 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),difficulty : String) {
                     fontSize = 20.sp,
                     fontWeight = FontWeight.SemiBold,
                     lineHeight = 28.sp,
-                    color = Color(0xFF212121)
+                    color = colorScheme.onBackground
                 )
 
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -101,18 +102,17 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),difficulty : String) {
                         val isSelected = answer == selectedAnswer
                         val isCorrect = answer == correctAnswer
 
+                        val bgColor = when {
+                            selectedAnswer == null -> colorScheme.surfaceVariant
+                            isCorrect -> Color(0xFF7DE882)
+                            isSelected && !isCorrect -> Color(0xFFFA8181)
+                            else -> colorScheme.surfaceVariant
+                        }
 
                         Card(
                             shape = RoundedCornerShape(16.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = when {
-                                    selectedAnswer == null -> Color(0xFFEBEFEA)
-                                    isCorrect -> Color(0xFF7DE882) // yeşilimsi doğru
-                                    isSelected && !isCorrect -> Color(0xFFFA8181) // kırmızımsı yanlış
-                                    else -> Color(0xFFEBEFEA)
-                                }
-                            ),
+                            colors = CardDefaults.cardColors(containerColor = bgColor),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable(enabled = selectedAnswer == null && timeLeft.value > 0) {
@@ -128,36 +128,35 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),difficulty : String) {
                                     text = answer,
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = Color(0xFF212121)
+                                    color = colorScheme.onSurface
                                 )
                             }
                         }
-
                     }
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // 50/50 Buton
                     Button(
                         onClick = {
                             viewModel.useFiftyJoker()
                             fiftyJokerEnabled = true
                         },
-                        enabled = jokerCount>0 && fiftyJokerEnabled == false &&
-                                timeLeft.value>0 && selectedAnswer == null,
+                        enabled = jokerCount > 0 && !fiftyJokerEnabled &&
+                                timeLeft.value > 0 && selectedAnswer == null,
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF4CAF50),
-                            contentColor = Color.White,
-                            disabledContentColor =  Color(0xFF7AB27C)
+                            containerColor = colorScheme.primary,
+                            contentColor = colorScheme.onPrimary,
+                            disabledContainerColor = colorScheme.primary.copy(alpha = 0.5f),
+                            disabledContentColor = colorScheme.onPrimary.copy(alpha = 0.7f)
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp)
-                            .clickable(enabled = timeLeft.value > 0) {}
                     ) {
                         Text("50/50 Joker ($jokerCount)", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
+
                     Spacer(modifier = Modifier.height(64.dp))
 
                     Row(
@@ -170,33 +169,30 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),difficulty : String) {
                             Text(
                                 text = "Time Left",
                                 fontSize = 14.sp,
-                                color = Color(0xFF757575),
+                                color = colorScheme.onBackground,
                                 fontWeight = FontWeight.Medium
                             )
-                            val timeLeft = viewModel.timeLeft
 
                             val maxTime = 15f
-                            val targetProgress = (maxTime-timeLeft.value) / maxTime
+                            val targetProgress = (maxTime - timeLeft.value) / maxTime
                             val animatedProgress by animateFloatAsState(
                                 targetValue = targetProgress,
                                 animationSpec = tween(durationMillis = 1000, easing = LinearEasing)
                             )
 
                             LinearProgressIndicator(
-                                progress = {animatedProgress},
+                                progress = { animatedProgress },
                                 modifier = Modifier
                                     .fillMaxWidth(0.3f)
                                     .height(6.dp),
-                                color = Color(0xFFE0E0E0),
-                                trackColor = Color(0xFF4CAF50),
-                                gapSize = 0.dp,
-                                drawStopIndicator = {}
+                                color = colorScheme.surfaceVariant,
+                                trackColor = colorScheme.primary
                             )
 
                             Text(
                                 text = "${timeLeft.value}s",
                                 fontSize = 40.sp,
-                                color = Color(0xFF212121),
+                                color = colorScheme.onBackground,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -205,34 +201,30 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),difficulty : String) {
                             Text(
                                 text = "Score",
                                 fontSize = 14.sp,
-                                color = Color(0xFF757575),
+                                color = colorScheme.onBackground,
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = "$correctQuestionCount/${questionNumber-1}",
+                                text = "$correctQuestionCount/${questionNumber - 1}",
                                 fontSize = 40.sp,
-                                color = Color(0xFF212121),
+                                color = colorScheme.onBackground,
                                 fontWeight = FontWeight.Bold
                             )
                         }
                     }
-
-
                 }
             }
         }
     }
-
-
-
 }
 
 @Composable
-fun StartingScreen(startCounter : Int) {
+fun StartingScreen(startCounter: Int) {
+    val colorScheme = MaterialTheme.colorScheme
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFF8F8F8)
+        color = colorScheme.background
     ) {
         Box(
             contentAlignment = Alignment.Center,
@@ -242,8 +234,9 @@ fun StartingScreen(startCounter : Int) {
                 text = "Starting in $startCounter...",
                 fontSize = 48.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF4CAF50)
+                color = colorScheme.primary
             )
         }
     }
 }
+

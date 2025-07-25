@@ -13,6 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.quizzy.data.model.Screen
+import com.example.quizzy.ui.theme.QuizzyTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -21,9 +22,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            QuizzyTheme {
+                val navController = rememberNavController()
+                SetUpNavigation(navController)
+            }
 
-            val navController = rememberNavController()
-            SetUpNavigation(navController)
 
         }
     }
@@ -42,6 +45,10 @@ fun SetUpNavigation(navController : NavHostController) {
         )) {
             val difficulty = it.arguments?.getString("difficulty") ?:""
             QuizScreen(difficulty = difficulty)
+        }
+
+        composable(Screen.Settings.route) {
+            SettingsScreen()
         }
     }
 

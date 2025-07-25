@@ -1,5 +1,6 @@
 package com.example.quizzy.presentation.ui
 
+import android.content.res.Resources
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -13,17 +14,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.quizzy.data.model.Screen
+import com.example.quizzy.ui.theme.QuizzyTheme
 
 @Composable
 fun MainScreen(
-    navController : NavHostController
+    navController: NavHostController
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {},
-                containerColor = Color(0xFF6200EE),
-                contentColor = Color.White,
+                onClick = {
+                    navController.navigate(Screen.Settings.route)
+                },
+                containerColor = colorScheme.primary,
+                contentColor = colorScheme.onPrimary,
                 shape = RoundedCornerShape(50)
             ) {
                 Icon(Icons.Default.Settings, contentDescription = "Settings")
@@ -33,7 +39,8 @@ fun MainScreen(
         Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues),
+            color = colorScheme.background
         ) {
             Column(
                 modifier = Modifier
@@ -45,7 +52,7 @@ fun MainScreen(
                 Text(
                     text = "Select Difficulty",
                     style = MaterialTheme.typography.headlineMedium,
-                    color = Color(0xFF333333)
+                    color = colorScheme.onBackground
                 )
 
                 DifficultyButton("Easy", Color(0xFF81C784)) {
@@ -68,6 +75,8 @@ fun DifficultyButton(
     backgroundColor: Color,
     onClick: () -> Unit
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+
     Button(
         onClick = onClick,
         modifier = Modifier
@@ -75,7 +84,7 @@ fun DifficultyButton(
             .height(60.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = backgroundColor,
-            contentColor = Color.White
+            contentColor = colorScheme.onPrimary
         ),
         shape = RoundedCornerShape(12.dp)
     ) {

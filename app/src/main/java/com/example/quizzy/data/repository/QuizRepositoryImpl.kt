@@ -4,6 +4,8 @@ import com.example.quizzy.data.mapper.toQuiz
 import com.example.quizzy.data.remote.QuizAPI
 import com.example.quizzy.domain.model.Quiz
 import com.example.quizzy.domain.repository.QuizRepository
+import com.example.quizzy.util.Category
+import com.example.quizzy.util.Difficulty
 import dagger.hilt.android.scopes.ViewModelScoped
 import javax.inject.Inject
 
@@ -11,11 +13,8 @@ import javax.inject.Inject
 class QuizRepositoryImpl @Inject constructor(
     private val api : QuizAPI
 ) : QuizRepository{
-    override suspend fun getQuestions(difficulty: String): Quiz {
-       return when(difficulty){
-           "easy" ->{api.getEasyQuestions().toQuiz()}
-           "medium"-> {api.getMediumQuestions().toQuiz()}
-           "hard" -> {api.getHardQuestions().toQuiz()}
-           else ->{api.getEasyQuestions().toQuiz()}}
+    override suspend fun getQuestions(category : Category, difficulty: Difficulty?): Quiz {
+        return api.getQuestions(category = category.category, difficulty = difficulty?.diff).toQuiz()
     }
+
 }

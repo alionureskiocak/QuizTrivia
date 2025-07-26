@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.quizzy.data.model.Screen
 import com.example.quizzy.ui.theme.QuizzyTheme
+import com.example.quizzy.util.Difficulty
 
 @Composable
 fun MainScreen(
@@ -56,13 +57,13 @@ fun MainScreen(
                 )
 
                 DifficultyButton("Easy", Color(0xFF81C784)) {
-                    navController.navigate(Screen.Quiz.passDifficulty("easy"))
+                    navController.navigate(Screen.Quiz.passDifficulty(Difficulty.EASY))
                 }
                 DifficultyButton("Medium", Color(0xFFFFD54F)) {
-                    navController.navigate(Screen.Quiz.passDifficulty("medium"))
+                    navController.navigate(Screen.Quiz.passDifficulty(Difficulty.MEDIUM))
                 }
                 DifficultyButton("Hard", Color(0xFFE57373)) {
-                    navController.navigate(Screen.Quiz.passDifficulty("hard"))
+                    navController.navigate(Screen.Quiz.passDifficulty(Difficulty.HARD))
                 }
             }
         }

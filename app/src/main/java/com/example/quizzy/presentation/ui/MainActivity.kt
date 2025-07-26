@@ -4,8 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -14,6 +14,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.quizzy.data.model.Screen
 import com.example.quizzy.ui.theme.QuizzyTheme
+import com.example.quizzy.util.Category
+import com.example.quizzy.util.Difficulty
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -22,34 +24,47 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            QuizzyTheme {
+            val themeState = rememberSaveable { mutableStateOf("system") }
+
+            QuizzyTheme(themeMode = themeState.value) {
                 val navController = rememberNavController()
-                SetUpNavigation(navController)
+                SetUpNavigation(
+                    navController = navController,
+                    onThemeSelected = { selectedTheme ->
+                        themeState.value = selectedTheme
+                    }
+                )
             }
-
-
         }
     }
 }
 
 @Composable
-fun SetUpNavigation(navController : NavHostController) {
-    NavHost(navController = navController,
-        startDestination = Screen.Home.route){
-        composable(Screen.Home.route){
+fun SetUpNavigation(
+    navController: NavHostController,
+    onThemeSelected: (String) -> Unit
+) {
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Home.route
+    ) {
+        composable(Screen.Home.route) {
             MainScreen(navController = navController)
         }
 
-        composable(Screen.Quiz.route, arguments = listOf(
-            navArgument("difficulty") {type = NavType.StringType}
-        )) {
-            val difficulty = it.arguments?.getString("difficulty") ?:""
-            QuizScreen(difficulty = difficulty)
+        composable(
+            Screen.Quiz.route,
+            arguments = listOf(navArgument("difficulty") {
+                type = NavType.StringType
+            })
+        ) {
+            val difficultyString = it.arguments?.getString("difficulty")
+            val difficulty = Difficulty.valueOf(difficultyString.toString())
+            QuizScreen(category = Category.SPORT,difficulty = difficulty)
         }
 
         composable(Screen.Settings.route) {
-            SettingsScreen()
+            SettingsScreen(onThemeSelected = onThemeSelected)
         }
     }
-
 }

@@ -1,12 +1,16 @@
 package com.example.quizzy.presentation
 
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.quizzy.domain.model.Question
 import com.example.quizzy.domain.use_case.GetQuizUseCase
+import com.example.quizzy.util.Category
+import com.example.quizzy.util.Difficulty
 import com.example.quizzy.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -52,8 +56,10 @@ class QuizViewModel @Inject constructor(
             }
         }
     }
-
+   var hasStarted = false
     fun startTimer(){
+        if (hasStarted) return
+        hasStarted = true
         timerJob?.cancel()
         _timeLeft.intValue = 15
         timerJob = viewModelScope.launch {
@@ -68,8 +74,8 @@ class QuizViewModel @Inject constructor(
         }
     }
 
-    fun getQuestions(difficulty : String){
-        getQuizUseCase.invoke(difficulty).onEach {
+    fun getQuestions(category : Category, difficulty : Difficulty?){
+        getQuizUseCase.invoke(category,difficulty).onEach {
             when(it){
                 is Resource.Error -> {
                     _state.value = _state.value.copy(errorMsg = it.message?:"Error.", isLoading = false)

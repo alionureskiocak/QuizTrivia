@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,12 +19,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.quizzy.presentation.QuizViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.quizzy.util.Category
+import com.example.quizzy.util.Difficulty
 import kotlinx.coroutines.delay
 
 
 
 @Composable
-fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), difficulty: String) {
+fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, difficulty : Difficulty?) {
     val state by viewModel.state
     val answerList = state.answerList
     val currentQuestion = state.currentQuestion
@@ -40,15 +43,19 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), difficulty: String) {
     }
     val startCounter = viewModel.startCounter
     val isCounting = viewModel.isCounting
-
+    var showCountDown by rememberSaveable { mutableStateOf(true) }
     val colorScheme = MaterialTheme.colorScheme
 
-    LaunchedEffect(isCounting) {
-        if (isCounting.value == false) {
-            viewModel.getQuestions(difficulty)
+    var isFirstLaunch by rememberSaveable { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        if (isFirstLaunch) {
+            isFirstLaunch = false
+            viewModel.getQuestions(category,difficulty)
             viewModel.startCounter()
         }
     }
+
 
     LaunchedEffect(selectedAnswer) {
         if (selectedAnswer != null) {

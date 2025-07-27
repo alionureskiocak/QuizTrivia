@@ -1,16 +1,15 @@
 package com.example.quizzy.presentation
 
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.quizzy.domain.model.Question
 import com.example.quizzy.domain.use_case.GetQuizUseCase
-import com.example.quizzy.util.Category
-import com.example.quizzy.util.Difficulty
+import com.example.quizzy.data.model.Category
+import com.example.quizzy.data.model.Difficulty
 import com.example.quizzy.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -69,6 +68,7 @@ class QuizViewModel @Inject constructor(
             }
             if(_timeLeft.intValue == 0){
                 delay(2000)
+                timerJob?.cancel()
                 getNewQuestion()
             }
         }
@@ -142,6 +142,24 @@ class QuizViewModel @Inject constructor(
         }
         answerList.shuffle()
         _state.value = _state.value.copy(answerList = answerList)
+    }
+
+    fun restart(){
+            viewModelScope.launch {
+                _state.value= _state.value.copy(
+                    questions  = emptyList(),
+                    currentQuestion  = Question("","","",listOf(),"",""),
+                    selectedAnswer  = null,
+                    answerList  = arrayListOf(),
+                    currentQuestionCount  = 0,
+                    correctQuestionCount  = 0,
+                    fiftyJokerStayedList = arrayListOf(),
+                    jokerCount  = 2,
+                    correctAnswer = _state.value.currentQuestion.correctAnswer,
+                    isLoading  = false,
+                    errorMsg = "")
+            }
+
     }
 
 }

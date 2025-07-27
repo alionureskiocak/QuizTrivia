@@ -14,8 +14,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.quizzy.data.model.Screen
 import com.example.quizzy.ui.theme.QuizzyTheme
-import com.example.quizzy.util.Category
-import com.example.quizzy.util.Difficulty
+import com.example.quizzy.data.model.Category
+import com.example.quizzy.data.model.Difficulty
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -54,13 +54,17 @@ fun SetUpNavigation(
 
         composable(
             Screen.Quiz.route,
-            arguments = listOf(navArgument("difficulty") {
-                type = NavType.StringType
-            })
+            arguments = listOf(
+                navArgument("category") { type = NavType.StringType },
+                navArgument("difficulty") { type = NavType.StringType }
+            )
         ) {
+            val categoryString = it.arguments?.getString("category")
             val difficultyString = it.arguments?.getString("difficulty")
+            val category = Category.valueOf(categoryString!!)
             val difficulty = Difficulty.valueOf(difficultyString.toString())
-            QuizScreen(category = Category.SPORT,difficulty = difficulty)
+
+            QuizScreen(category = category,difficulty = difficulty)
         }
 
         composable(Screen.Settings.route) {

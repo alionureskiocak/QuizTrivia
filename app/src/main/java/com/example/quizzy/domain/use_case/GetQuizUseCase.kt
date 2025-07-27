@@ -3,8 +3,8 @@ package com.example.quizzy.domain.use_case
 import com.example.quizzy.data.mapper.cleaned
 import com.example.quizzy.domain.model.Quiz
 import com.example.quizzy.domain.repository.QuizRepository
-import com.example.quizzy.util.Category
-import com.example.quizzy.util.Difficulty
+import com.example.quizzy.data.model.Category
+import com.example.quizzy.data.model.Difficulty
 import com.example.quizzy.util.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow

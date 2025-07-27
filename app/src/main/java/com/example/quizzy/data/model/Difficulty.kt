@@ -1,4 +1,4 @@
-package com.example.quizzy.util
+package com.example.quizzy.data.model
 
 enum class Difficulty(val diff : String?){
     EASY("easy"),

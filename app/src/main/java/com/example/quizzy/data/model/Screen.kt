@@ -1,12 +1,11 @@
 package com.example.quizzy.data.model
 
-import com.example.quizzy.util.Difficulty
-
 sealed class Screen(val route : String) {
 
     object Home : Screen(route = "home_screen")
-    object Quiz : Screen(route = "quiz_screen/{difficulty}"){
-        fun passDifficulty(diff : Difficulty?) = "quiz_screen/$diff"
+    object Quiz : Screen(route = "quiz_screen/{category}/{difficulty}"){
+        fun passCategoryAndDifficulty(category : Category, difficulty : Difficulty?) =
+            "quiz_screen/${category.name}/${difficulty?.name}"
     }
     object Settings : Screen(route = "settings_screen")
 }

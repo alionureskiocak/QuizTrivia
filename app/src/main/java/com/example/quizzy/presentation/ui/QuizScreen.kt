@@ -7,6 +7,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -17,10 +19,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import com.example.quizzy.presentation.QuizViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.quizzy.util.Category
-import com.example.quizzy.util.Difficulty
+import com.example.quizzy.data.model.Category
+import com.example.quizzy.data.model.Difficulty
 import kotlinx.coroutines.delay
 
 
@@ -43,20 +46,18 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
     }
     val startCounter = viewModel.startCounter
     val isCounting = viewModel.isCounting
-    var showCountDown by rememberSaveable { mutableStateOf(true) }
     val colorScheme = MaterialTheme.colorScheme
-
+    var isFinished by remember{mutableStateOf(false)}
+    var showDialog by remember{mutableStateOf(false)}
     var isFirstLaunch by rememberSaveable { mutableStateOf(true) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(isFirstLaunch) {
         if (isFirstLaunch) {
             isFirstLaunch = false
             viewModel.getQuestions(category,difficulty)
             viewModel.startCounter()
         }
     }
-
-
     LaunchedEffect(selectedAnswer) {
         if (selectedAnswer != null) {
             delay(2000)
@@ -65,9 +66,22 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
         }
     }
 
+   if (showDialog){
+       CustomDialog(onDismiss = {
+           showDialog = false
+       }, onRestart = {
+           isFirstLaunch = true
+           viewModel.restart()
+       })
+   }
+
     if (isCounting.value) {
         StartingScreen(startCounter.value)
-    } else {
+    }
+    else if(isFinished){
+        showDialog = true
+    }
+    else {
         Surface(
             modifier = Modifier
                 .fillMaxSize()
@@ -123,6 +137,10 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable(enabled = selectedAnswer == null && timeLeft.value > 0) {
+                                   // if (questionNumber == 2){
+                                   //     isFinished = true
+                                   //     return@clickable
+                                   // }
                                     viewModel.onAnswerSelected(answer)
                                     if (answer == correctAnswer) viewModel.rightAnswer()
                                 }
@@ -245,5 +263,43 @@ fun StartingScreen(startCounter: Int) {
             )
         }
     }
+}
+
+
+@Composable
+fun CustomDialog(
+    onDismiss : () -> Unit,
+    onRestart : () -> Unit
+                 ) {
+    AlertDialog( onDismissRequest = {
+        onDismiss()
+    },
+        confirmButton= {
+            Button(onClick = {
+                onRestart()
+                onDismiss()
+            },
+                shape = RoundedCornerShape(8.dp)) {
+                Text(text = "Start Again",fontSize = 20.sp)
+            }
+        },
+        dismissButton = {
+            Button(onClick = {
+                //ANA MENÜYE DÖN
+            },
+                shape = RoundedCornerShape(8.dp)) {
+                Text(text = "Main Menu",fontSize = 20.sp)
+            }
+        },
+        icon = {
+            Icon(
+            imageVector = Icons.Filled.Warning,
+            contentDescription = "Warning",
+            tint = MaterialTheme.colorScheme.primary
+        )},
+        title = { Text(text = "Game Finished!", style = MaterialTheme.typography.headlineSmall)},
+        text = {Text(text = "Score : 5\nHigh Score : 8",fontSize = 20.sp)},
+        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+    )
 }
 

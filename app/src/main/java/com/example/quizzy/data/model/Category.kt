@@ -1,4 +1,4 @@
-package com.example.quizzy.util
+package com.example.quizzy.data.model
 
 enum class Category(val category : Int){
     FILM(11),

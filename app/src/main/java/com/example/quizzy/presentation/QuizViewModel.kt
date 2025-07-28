@@ -55,10 +55,8 @@ class QuizViewModel @Inject constructor(
             }
         }
     }
-   var hasStarted = false
     fun startTimer(){
-        if (hasStarted) return
-        hasStarted = true
+
         timerJob?.cancel()
         _timeLeft.intValue = 15
         timerJob = viewModelScope.launch {
@@ -146,6 +144,7 @@ class QuizViewModel @Inject constructor(
 
     fun restart(){
             viewModelScope.launch {
+                delay(2000)
                 _state.value= _state.value.copy(
                     questions  = emptyList(),
                     currentQuestion  = Question("","","",listOf(),"",""),

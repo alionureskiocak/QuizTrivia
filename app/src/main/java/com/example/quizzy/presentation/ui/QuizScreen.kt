@@ -58,6 +58,7 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
             viewModel.startCounter()
         }
     }
+
     LaunchedEffect(selectedAnswer) {
         if (selectedAnswer != null) {
             delay(2000)
@@ -66,14 +67,14 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
         }
     }
 
-   if (showDialog){
-       CustomDialog(onDismiss = {
-           showDialog = false
-       }, onRestart = {
-           isFirstLaunch = true
-           viewModel.restart()
-       })
-   }
+    if (showDialog){
+        CustomDialog(onDismiss = {
+            showDialog = false
+        }, onRestart = {
+            isFirstLaunch = true
+            viewModel.restart()
+        })
+    }
 
     if (isCounting.value) {
         StartingScreen(startCounter.value)

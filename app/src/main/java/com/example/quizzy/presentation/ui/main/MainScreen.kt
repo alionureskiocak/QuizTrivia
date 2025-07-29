@@ -1,4 +1,4 @@
-package com.example.quizzy.presentation.ui
+package com.example.quizzy.presentation.ui.main
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,7 +19,6 @@ import androidx.navigation.NavHostController
 import com.example.quizzy.data.model.Category
 import com.example.quizzy.data.model.Screen
 import com.example.quizzy.data.model.Difficulty
-import kotlin.math.absoluteValue
 
 @Composable
 fun MainScreen(

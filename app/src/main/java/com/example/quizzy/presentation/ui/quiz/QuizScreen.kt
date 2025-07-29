@@ -1,4 +1,4 @@
-package com.example.quizzy.presentation.ui
+package com.example.quizzy.presentation.ui.quiz
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -20,12 +20,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
-import com.example.quizzy.presentation.QuizViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.quizzy.data.model.Category
 import com.example.quizzy.data.model.Difficulty
 import kotlinx.coroutines.delay
-
 
 
 @Composable
@@ -47,40 +45,51 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
     val startCounter = viewModel.startCounter
     val isCounting = viewModel.isCounting
     val colorScheme = MaterialTheme.colorScheme
-    var isFinished by remember{mutableStateOf(false)}
     var showDialog by remember{mutableStateOf(false)}
     var isFirstLaunch by rememberSaveable { mutableStateOf(true) }
+    var isGameFinished by remember{mutableStateOf(false)}
 
     LaunchedEffect(isFirstLaunch) {
         if (isFirstLaunch) {
             isFirstLaunch = false
+            viewModel.cleanStateForNewGame()
             viewModel.getQuestions(category,difficulty)
             viewModel.startCounter()
         }
     }
 
     LaunchedEffect(selectedAnswer) {
-        if (selectedAnswer != null) {
+        if (selectedAnswer != null && !isGameFinished) {
             delay(2000)
             viewModel.getNewQuestion()
             fiftyJokerEnabled = false
         }
     }
 
+    LaunchedEffect(isGameFinished) {
+        if(isGameFinished){
+            viewModel.stopTimer()
+            delay(2000)
+            isGameFinished = false
+            showDialog = true
+        }
+
+    }
+
     if (showDialog){
-        CustomDialog(onDismiss = {
+        CustomDialog(
+            score = correctQuestionCount,
+            highScore = 10,
+            onDismiss = {
             showDialog = false
         }, onRestart = {
             isFirstLaunch = true
-            viewModel.restart()
+
         })
     }
 
     if (isCounting.value) {
         StartingScreen(startCounter.value)
-    }
-    else if(isFinished){
-        showDialog = true
     }
     else {
         Surface(
@@ -138,10 +147,10 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable(enabled = selectedAnswer == null && timeLeft.value > 0) {
-                                   // if (questionNumber == 2){
-                                   //     isFinished = true
-                                   //     return@clickable
-                                   // }
+                                    if (questionNumber == 2){
+                                        isGameFinished = true
+                                        //return@clickable
+                                    }
                                     viewModel.onAnswerSelected(answer)
                                     if (answer == correctAnswer) viewModel.rightAnswer()
                                 }
@@ -270,7 +279,9 @@ fun StartingScreen(startCounter: Int) {
 @Composable
 fun CustomDialog(
     onDismiss : () -> Unit,
-    onRestart : () -> Unit
+    onRestart : () -> Unit,
+    score : Int,
+    highScore : Int
                  ) {
     AlertDialog( onDismissRequest = {
         onDismiss()
@@ -299,7 +310,7 @@ fun CustomDialog(
             tint = MaterialTheme.colorScheme.primary
         )},
         title = { Text(text = "Game Finished!", style = MaterialTheme.typography.headlineSmall)},
-        text = {Text(text = "Score : 5\nHigh Score : 8",fontSize = 20.sp)},
+        text = {Text(text = "Score : $score\nHigh Score : $highScore",fontSize = 20.sp)},
         properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
     )
 }

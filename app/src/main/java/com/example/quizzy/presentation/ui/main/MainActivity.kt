@@ -1,4 +1,4 @@
-package com.example.quizzy.presentation.ui
+package com.example.quizzy.presentation.ui.main
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -16,6 +16,8 @@ import com.example.quizzy.data.model.Screen
 import com.example.quizzy.ui.theme.QuizzyTheme
 import com.example.quizzy.data.model.Category
 import com.example.quizzy.data.model.Difficulty
+import com.example.quizzy.presentation.ui.quiz.QuizScreen
+import com.example.quizzy.presentation.ui.settings.SettingsScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -64,7 +66,7 @@ fun SetUpNavigation(
             val category = Category.valueOf(categoryString!!)
             val difficulty = Difficulty.valueOf(difficultyString.toString())
 
-            QuizScreen(category = category,difficulty = difficulty)
+            QuizScreen(category = category, difficulty = difficulty)
         }
 
         composable(Screen.Settings.route) {

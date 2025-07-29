@@ -1,11 +1,10 @@
-package com.example.quizzy.presentation
+package com.example.quizzy.presentation.ui.quiz
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.quizzy.domain.model.Question
 import com.example.quizzy.domain.use_case.GetQuizUseCase
 import com.example.quizzy.data.model.Category
@@ -70,6 +69,10 @@ class QuizViewModel @Inject constructor(
                 getNewQuestion()
             }
         }
+    }
+
+    fun stopTimer(){
+        timerJob?.cancel()
     }
 
     fun getQuestions(category : Category, difficulty : Difficulty?){
@@ -142,24 +145,24 @@ class QuizViewModel @Inject constructor(
         _state.value = _state.value.copy(answerList = answerList)
     }
 
-    fun restart(){
-            viewModelScope.launch {
-                delay(2000)
-                _state.value= _state.value.copy(
-                    questions  = emptyList(),
-                    currentQuestion  = Question("","","",listOf(),"",""),
-                    selectedAnswer  = null,
-                    answerList  = arrayListOf(),
-                    currentQuestionCount  = 0,
-                    correctQuestionCount  = 0,
-                    fiftyJokerStayedList = arrayListOf(),
-                    jokerCount  = 2,
-                    correctAnswer = _state.value.currentQuestion.correctAnswer,
-                    isLoading  = false,
-                    errorMsg = "")
-            }
+    fun cleanStateForNewGame(){
+
+        _state.value= _state.value.copy(
+            questions  = emptyList(),
+            currentQuestion  = Question("","","",listOf(),"",""),
+            selectedAnswer  = null,
+            answerList  = arrayListOf(),
+            currentQuestionCount  = 0,
+            correctQuestionCount  = 0,
+            fiftyJokerStayedList = arrayListOf(),
+            jokerCount  = 2,
+            correctAnswer = _state.value.currentQuestion.correctAnswer,
+            isLoading  = false,
+            errorMsg = "")
+
 
     }
+
 
 }
 

@@ -64,6 +64,9 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.1.0")
     implementation ("androidx.paging:paging-compose:3.3.1")
     implementation ("androidx.paging:paging-runtime:3.3.1")
+
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
     implementation ("androidx.room:room-paging:2.6.1")
     implementation("com.google.dagger:hilt-android:2.51.1")
     kapt("com.google.dagger:hilt-android-compiler:2.51.1")

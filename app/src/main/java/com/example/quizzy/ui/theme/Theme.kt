@@ -39,7 +39,8 @@ fun QuizzyTheme(
     val isDarkTheme = when (themeMode.lowercase()) {
         "light" -> false
         "dark" -> true
-        else -> isSystemInDarkTheme()
+        "system" -> isSystemInDarkTheme()
+        else -> {isSystemInDarkTheme()}
     }
 
     val colorScheme = if (isDarkTheme) DarkColorScheme else LightColorScheme

@@ -38,12 +38,12 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
     val fiftyJokerStayedList = state.fiftyJokerStayedList
     var fiftyJokerEnabled by remember { mutableStateOf(false) }
     val jokerCount = state.jokerCount
-    val timeLeft = viewModel.timeLeft
+    val timeLeft by viewModel.timeLeft.collectAsState()
     val visibleAnswers = answerList.filter {
         !fiftyJokerEnabled || fiftyJokerStayedList.contains(it)
     }
-    val startCounter = viewModel.startCounter
-    val isCounting = viewModel.isCounting
+    val startCounter by viewModel.startCounter.collectAsState()
+    val isCounting by viewModel.isCounting.collectAsState()
     val colorScheme = MaterialTheme.colorScheme
     var showDialog by remember{mutableStateOf(false)}
     var isFirstLaunch by rememberSaveable { mutableStateOf(true) }
@@ -88,8 +88,8 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
         })
     }
 
-    if (isCounting.value) {
-        StartingScreen(startCounter.value)
+    if (isCounting) {
+        StartingScreen(startCounter)
     }
     else {
         Surface(
@@ -146,10 +146,9 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
                             colors = CardDefaults.cardColors(containerColor = bgColor),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable(enabled = selectedAnswer == null && timeLeft.value > 0) {
-                                    if (questionNumber == 2){
+                                .clickable(enabled = selectedAnswer == null && timeLeft > 0) {
+                                    if (questionNumber == 10){
                                         isGameFinished = true
-                                        //return@clickable
                                     }
                                     viewModel.onAnswerSelected(answer)
                                     if (answer == correctAnswer) viewModel.rightAnswer()
@@ -177,7 +176,7 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
                             fiftyJokerEnabled = true
                         },
                         enabled = jokerCount > 0 && !fiftyJokerEnabled &&
-                                timeLeft.value > 0 && selectedAnswer == null,
+                                timeLeft > 0 && selectedAnswer == null,
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = colorScheme.primary,
@@ -209,7 +208,7 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
                             )
 
                             val maxTime = 15f
-                            val targetProgress = (maxTime - timeLeft.value) / maxTime
+                            val targetProgress = (maxTime - timeLeft) / maxTime
                             val animatedProgress by animateFloatAsState(
                                 targetValue = targetProgress,
                                 animationSpec = tween(durationMillis = 1000, easing = LinearEasing)
@@ -225,7 +224,7 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
                             )
 
                             Text(
-                                text = "${timeLeft.value}s",
+                                text = "${timeLeft}s",
                                 fontSize = 40.sp,
                                 color = colorScheme.onBackground,
                                 fontWeight = FontWeight.Bold

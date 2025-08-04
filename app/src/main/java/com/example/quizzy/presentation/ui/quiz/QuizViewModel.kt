@@ -13,6 +13,9 @@ import com.example.quizzy.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -26,48 +29,57 @@ class QuizViewModel @Inject constructor(
     private val _state = mutableStateOf<QuizState>(QuizState())
     val state : State<QuizState> get() = _state
 
-    private val _timeLeft = mutableIntStateOf(15)
-    val timeLeft : State<Int> get() = _timeLeft
-    private var timerJob : Job? = null
+    private val _startCounter = MutableStateFlow(3)
+    val startCounter : StateFlow<Int> get() = _startCounter
 
-    private val _startCounter = mutableIntStateOf(3)
-    val startCounter : State<Int> get() = _startCounter
-
-    private val _isCounting = mutableStateOf(false)
-    val isCounting : State<Boolean> get() = _isCounting
+    private val _isCounting = MutableStateFlow(false)
+    val isCounting : StateFlow<Boolean> get() = _isCounting
 
     private var counterJob : Job? = null
 
     fun startCounter(){
         counterJob?.cancel()
         _isCounting.value = true
-        _startCounter.intValue = 3
+        _startCounter.value = 3
         counterJob = viewModelScope.launch {
-            while (_startCounter.intValue>0){
-                delay(1000)
-                _startCounter.intValue--
+            var counter = 3
+            while (counter>0){
+                flow {
+                    counter--
+                    delay(1000)
+                    emit(counter)
+                }.collect {
+                    _startCounter.value = it
+                }
             }
-            if (_startCounter.intValue == 0){
-                counterJob?.cancel()
-                _isCounting.value = false
-                getNewQuestion()
-            }
+            counterJob?.cancel()
+            _isCounting.value = false
+            getNewQuestion()
         }
     }
-    fun startTimer(){
 
+
+    private val _timeLeft = MutableStateFlow(15)
+    val timeLeft : StateFlow<Int> get() = _timeLeft
+
+    private var timerJob : Job? = null
+
+    fun startTimer(){
         timerJob?.cancel()
-        _timeLeft.intValue = 15
+        _timeLeft.value = 15
         timerJob = viewModelScope.launch {
-            while (_timeLeft.intValue>0){
-                delay(1000)
-                _timeLeft.intValue --
+            var counter = 15
+            while (counter>0){
+                flow {
+                    delay(1000)
+                    counter--
+                    emit(counter)
+                }.collect {
+                    _timeLeft.value = it
+                }
             }
-            if(_timeLeft.intValue == 0){
-                delay(2000)
-                timerJob?.cancel()
-                getNewQuestion()
-            }
+            delay(2000)
+            getNewQuestion()
         }
     }
 
@@ -160,22 +172,7 @@ class QuizViewModel @Inject constructor(
             isLoading  = false,
             errorMsg = "")
 
-
     }
-
 
 }
 
-data class QuizState(
-    val questions : List<Question> = emptyList(),
-    val currentQuestion : Question = Question("","","",listOf(),"",""),
-    var selectedAnswer : String? = null,
-    val answerList : ArrayList<String> = arrayListOf(),
-    val currentQuestionCount : Int = 0,
-    val correctQuestionCount : Int = 0,
-    val fiftyJokerStayedList : List<String> = arrayListOf(),
-    var jokerCount : Int = 2,
-    val correctAnswer : String = currentQuestion.correctAnswer,
-    val isLoading : Boolean = false,
-    val errorMsg : String = ""
-)

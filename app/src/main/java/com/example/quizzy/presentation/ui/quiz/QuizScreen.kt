@@ -1,9 +1,13 @@
 package com.example.quizzy.presentation.ui.quiz
 
+import android.content.res.Resources
+import androidx.compose.animation.*
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,20 +20,41 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.airbnb.lottie.LottieComposition
+import com.airbnb.lottie.compose.*
 import com.example.quizzy.data.model.Category
 import com.example.quizzy.data.model.Difficulty
 import kotlinx.coroutines.delay
-
+import com.example.quizzy.R
 
 @Composable
-fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, difficulty : Difficulty?) {
+fun ConfettiAnimation(modifier: Modifier = Modifier) {
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.partyy))
+    val progress by animateLottieCompositionAsState(
+        composition = composition,
+        iterations = LottieConstants.IterateForever
+    )
+
+    LottieAnimation(
+        composition = composition,
+        progress = { progress },
+        modifier = modifier.fillMaxSize()
+    )
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category: Category, difficulty: Difficulty?) {
     val state by viewModel.state
     val answerList = state.answerList
+    val isLoading = state.isLoading
     val currentQuestion = state.currentQuestion
     val selectedAnswer = state.selectedAnswer
     val correctAnswer = state.correctAnswer
@@ -39,22 +64,23 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
     var fiftyJokerEnabled by remember { mutableStateOf(false) }
     val jokerCount = state.jokerCount
     val timeLeft by viewModel.timeLeft.collectAsState()
-    val visibleAnswers = answerList.filter {
-        !fiftyJokerEnabled || fiftyJokerStayedList.contains(it)
-    }
     val startCounter by viewModel.startCounter.collectAsState()
     val isCounting by viewModel.isCounting.collectAsState()
     val colorScheme = MaterialTheme.colorScheme
-    var showDialog by remember{mutableStateOf(false)}
+    var showDialog by remember { mutableStateOf(false) }
     var isFirstLaunch by rememberSaveable { mutableStateOf(true) }
-    var isGameFinished by remember{mutableStateOf(false)}
+    var isGameFinished by remember { mutableStateOf(false) }
+
+    val visibleAnswers = answerList.filter {
+        !fiftyJokerEnabled || fiftyJokerStayedList.contains(it)
+    }
 
     LaunchedEffect(isFirstLaunch) {
         if (isFirstLaunch) {
             isFirstLaunch = false
             viewModel.cleanStateForNewGame()
-            viewModel.getQuestions(category,difficulty)
-            viewModel.startCounter()
+            viewModel.getQuestions(category, difficulty)
+            //viewModel.startCounter()
         }
     }
 
@@ -67,45 +93,54 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
     }
 
     LaunchedEffect(isGameFinished) {
-        if(isGameFinished){
+        if (isGameFinished) {
             viewModel.stopTimer()
             delay(2000)
             isGameFinished = false
             showDialog = true
         }
-
     }
 
-    if (showDialog){
-        CustomDialog(
-            score = correctQuestionCount,
-            highScore = 10,
-            onDismiss = {
-            showDialog = false
-        }, onRestart = {
-            isFirstLaunch = true
-
-        })
+    if (showDialog) {
+        AnimatedVisibility(
+            visible = showDialog,
+            enter = scaleIn(tween(500)) + fadeIn(tween(500)),
+            exit = scaleOut(tween(300)) + fadeOut(tween(300))
+        ) {
+            CustomDialog(
+                score = correctQuestionCount,
+                onDismiss = { showDialog = false },
+                onRestart = { isFirstLaunch = true }
+            )
+        }
     }
 
-    if (isCounting) {
-        StartingScreen(startCounter)
+    if (isLoading) {
+        StartingScreen()
     }
     else {
-        Surface(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 16.dp),
-            color = colorScheme.background
+                .background(colorScheme.background)
         ) {
+            // Confetti animasyonu hep açık
+            ConfettiAnimation(modifier = Modifier.matchParentSize())
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 20.dp, vertical = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                val progressAnim by animateFloatAsState(
+                    targetValue = questionNumber / 10f,
+                    animationSpec = tween(500)
+                )
+
                 LinearProgressIndicator(
-                    progress = {questionNumber / 10f},
+                    progress = { progressAnim },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(6.dp)
@@ -114,31 +149,51 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
                     trackColor = colorScheme.surfaceVariant
                 )
 
-                Text(
-                    text = "Question $questionNumber / 10",
-                    fontSize = 14.sp,
-                    color = colorScheme.onBackground
-                )
+                AnimatedContent(
+                    targetState = questionNumber,
+                    transitionSpec = {
+                        (slideInVertically(initialOffsetY = { it }) + fadeIn()) with
+                                (slideOutVertically(targetOffsetY = { -it }) + fadeOut())
+                    }
+                ) { qNum ->
+                    Text("Question $qNum / 10", fontSize = 14.sp, color = colorScheme.onBackground)
+                }
 
-                Text(
-                    text = currentQuestion.questionString,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    lineHeight = 28.sp,
-                    color = colorScheme.onBackground
-                )
+                AnimatedContent(
+                    targetState = currentQuestion.questionString,
+                    transitionSpec = {
+                        fadeIn(tween(300)) + slideInHorizontally(initialOffsetX = { it / 2 }) with
+                                fadeOut(tween(200)) + slideOutHorizontally(targetOffsetX = { -it / 2 })
+                    }
+                ) { questionText ->
+                    Text(
+                        text = questionText,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        lineHeight = 28.sp,
+                        color = colorScheme.onBackground
+                    )
+                }
 
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     visibleAnswers.forEach { answer ->
                         val isSelected = answer == selectedAnswer
                         val isCorrect = answer == correctAnswer
 
-                        val bgColor = when {
-                            selectedAnswer == null -> colorScheme.surfaceVariant
-                            isCorrect -> Color(0xFF7DE882)
-                            isSelected && !isCorrect -> Color(0xFFFA8181)
-                            else -> colorScheme.surfaceVariant
-                        }
+                        val bgColor by animateColorAsState(
+                            targetValue = when {
+                                selectedAnswer == null -> colorScheme.surfaceVariant
+                                isCorrect -> Color(0xFF7DE882)
+                                isSelected && !isCorrect -> Color(0xFFFA8181)
+                                else -> colorScheme.surfaceVariant
+                            },
+                            animationSpec = tween(400)
+                        )
+
+                        val scale by animateFloatAsState(
+                            targetValue = if (isSelected) 1.05f else 1f,
+                            animationSpec = tween(300)
+                        )
 
                         Card(
                             shape = RoundedCornerShape(16.dp),
@@ -146,10 +201,12 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
                             colors = CardDefaults.cardColors(containerColor = bgColor),
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .graphicsLayer {
+                                    scaleX = scale
+                                    scaleY = scale
+                                }
                                 .clickable(enabled = selectedAnswer == null && timeLeft > 0) {
-                                    if (questionNumber == 10){
-                                        isGameFinished = true
-                                    }
+                                    if (questionNumber == 10) isGameFinished = true
                                     viewModel.onAnswerSelected(answer)
                                     if (answer == correctAnswer) viewModel.rightAnswer()
                                 }
@@ -175,8 +232,7 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
                             viewModel.useFiftyJoker()
                             fiftyJokerEnabled = true
                         },
-                        enabled = jokerCount > 0 && !fiftyJokerEnabled &&
-                                timeLeft > 0 && selectedAnswer == null,
+                        enabled = jokerCount > 0 && !fiftyJokerEnabled && timeLeft > 0 && selectedAnswer == null,
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = colorScheme.primary,
@@ -200,18 +256,13 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "Time Left",
-                                fontSize = 14.sp,
-                                color = colorScheme.onBackground,
-                                fontWeight = FontWeight.Medium
-                            )
+                            Text("Time Left", fontSize = 14.sp, fontWeight = FontWeight.Medium)
 
                             val maxTime = 15f
                             val targetProgress = (maxTime - timeLeft) / maxTime
                             val animatedProgress by animateFloatAsState(
                                 targetValue = targetProgress,
-                                animationSpec = tween(durationMillis = 1000, easing = LinearEasing)
+                                animationSpec = tween(1000, easing = LinearEasing)
                             )
 
                             LinearProgressIndicator(
@@ -223,27 +274,30 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
                                 trackColor = colorScheme.primary
                             )
 
+                            val scale by animateFloatAsState(
+                                targetValue = if (timeLeft <= 3) 1.4f else 1f,
+                                animationSpec = tween(400)
+                            )
+
                             Text(
-                                text = "${timeLeft}s",
+                                text = "$timeLeft s",
                                 fontSize = 40.sp,
-                                color = colorScheme.onBackground,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.graphicsLayer {
+                                    scaleX = scale
+                                    scaleY = scale
+                                }
                             )
                         }
 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "Score",
-                                fontSize = 14.sp,
-                                color = colorScheme.onBackground,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Text(
-                                text = "$correctQuestionCount/${questionNumber - 1}",
-                                fontSize = 40.sp,
-                                color = colorScheme.onBackground,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Text("Score", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                            AnimatedContent(
+                                targetState = correctQuestionCount,
+                                transitionSpec = { fadeIn() with fadeOut() }
+                            ) {
+                                Text("$it/${questionNumber - 1}", fontSize = 40.sp, fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
                 }
@@ -253,64 +307,57 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(), category : Category, 
 }
 
 @Composable
-fun StartingScreen(startCounter: Int) {
-    val colorScheme = MaterialTheme.colorScheme
+fun StartingScreen(modifier : Modifier = Modifier) {
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = colorScheme.background
+    val isDarkTheme = isSystemInDarkTheme()
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.background(MaterialTheme.colorScheme.background)
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Text(
-                text = "Starting in $startCounter...",
-                fontSize = 48.sp,
-                fontWeight = FontWeight.Bold,
-                color = colorScheme.primary
-            )
-        }
+        val lottieRes = if (isDarkTheme) R.raw.black_loading else R.raw.white_loading
+        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(lottieRes))
+        val progress by animateLottieCompositionAsState(
+            composition = composition,
+            iterations = LottieConstants.IterateForever
+        )
+
+        LottieAnimation(
+            composition = composition,
+            progress = { progress },
+            modifier = modifier.fillMaxSize()
+        )
     }
+
+
 }
 
-
 @Composable
-fun CustomDialog(
-    onDismiss : () -> Unit,
-    onRestart : () -> Unit,
-    score : Int,
-    highScore : Int
-                 ) {
-    AlertDialog( onDismissRequest = {
-        onDismiss()
-    },
-        confirmButton= {
+fun CustomDialog(onDismiss: () -> Unit, onRestart: () -> Unit, score: Int) {
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        confirmButton = {
             Button(onClick = {
                 onRestart()
                 onDismiss()
-            },
-                shape = RoundedCornerShape(8.dp)) {
-                Text(text = "Start Again",fontSize = 20.sp)
+            }, shape = RoundedCornerShape(8.dp)) {
+                Text("Start Again", fontSize = 20.sp)
             }
         },
         dismissButton = {
-            Button(onClick = {
-                //ANA MENÜYE DÖN
-            },
-                shape = RoundedCornerShape(8.dp)) {
-                Text(text = "Main Menu",fontSize = 20.sp)
+            Button(onClick = { }, shape = RoundedCornerShape(8.dp)) {
+                Text("Main Menu", fontSize = 20.sp)
             }
         },
         icon = {
             Icon(
-            imageVector = Icons.Filled.Warning,
-            contentDescription = "Warning",
-            tint = MaterialTheme.colorScheme.primary
-        )},
-        title = { Text(text = "Game Finished!", style = MaterialTheme.typography.headlineSmall)},
-        text = {Text(text = "Score : $score\nHigh Score : $highScore",fontSize = 20.sp)},
+                imageVector = Icons.Filled.Warning,
+                contentDescription = "Warning",
+                tint = MaterialTheme.colorScheme.primary
+            )
+        },
+        title = { Text("Game Finished!", style = MaterialTheme.typography.headlineSmall) },
+        text = { Text("Score: $score\n", fontSize = 20.sp) },
         properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
     )
 }
-

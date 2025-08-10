@@ -64,7 +64,7 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.1.0")
     implementation ("androidx.paging:paging-compose:3.3.1")
     implementation ("androidx.paging:paging-runtime:3.3.1")
-
+    implementation ("com.airbnb.android:lottie-compose:6.1.0")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
     implementation ("androidx.room:room-paging:2.6.1")

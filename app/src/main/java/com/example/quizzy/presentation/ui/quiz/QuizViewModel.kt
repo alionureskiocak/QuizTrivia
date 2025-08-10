@@ -97,7 +97,8 @@ class QuizViewModel @Inject constructor(
                     _state.value = _state.value.copy(isLoading = true)
                 }
                 is Resource.Success -> {
-                    _state.value = _state.value.copy(questions = it.data?.questions?:emptyList())
+                    _state.value = _state.value.copy(questions = it.data?.questions?:emptyList(),isLoading = false)
+                    getNewQuestion()
                 }
             }
         }.launchIn(viewModelScope)

@@ -8,14 +8,14 @@ plugins {
 }
 
 android {
-    namespace = "com.example.quizzy"
+    namespace = "com.alionur.quizzy"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.quizzy"
+        applicationId = "com.alionur.quizzy"
         minSdk = 28
         targetSdk = 35
-        versionCode = 1
+        versionCode = 7
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

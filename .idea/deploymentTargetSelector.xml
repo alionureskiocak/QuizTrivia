@@ -15,10 +15,10 @@
       </SelectionState>
       <SelectionState runConfigName="QuizTrivia.app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-08-29T16:14:40.282284100Z">
+        <DropdownSelection timestamp="2025-09-14T16:50:13.370499300Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\speca\.android\avd\Pixel_7.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\speca\.android\avd\7_inch.avd" />
             </handle>
           </Target>
         </DropdownSelection>

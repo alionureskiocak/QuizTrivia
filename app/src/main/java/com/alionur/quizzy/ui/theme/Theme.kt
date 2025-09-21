@@ -16,7 +16,8 @@ private val DarkColorScheme = darkColorScheme(
     surface = Color(0xFF1E1E1E),    // Hafif yumuşak koyu
     onSurface = Color.White,
     error = Color(0xFFCF6679),
-    onError = Color.Black
+    onError = Color.Black,
+    outlineVariant = Color(0xFF3D66C0),
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -26,7 +27,7 @@ private val LightColorScheme = lightColorScheme(
     onSecondary = Color.Black,
     background = Color(0xFFF5F5F5),
     surface = Color.White,
-    onSurface = Color.Black,
+    onSurface = Color.Gray,
     error = Color(0xFFD32F2F),
     onError = Color.White
 )

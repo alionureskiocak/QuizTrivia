@@ -4,7 +4,7 @@ import com.alionur.quizzy.domain.model.Question
 
 data class QuizState(
     val questions : List<Question> = emptyList(),
-    val currentQuestion : Question = Question("","","",listOf(),"",""),
+    val currentQuestion : Question = Question("","","",listOf(),""),
     var selectedAnswer : String? = null,
     val answerList : ArrayList<String> = arrayListOf(),
     val currentQuestionCount : Int = 0,

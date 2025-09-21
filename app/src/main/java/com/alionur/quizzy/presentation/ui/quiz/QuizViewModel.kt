@@ -96,7 +96,7 @@ class QuizViewModel @Inject constructor(
                     _state.value = _state.value.copy(isLoading = true)
                 }
                 is Resource.Success -> {
-                    _state.value = _state.value.copy(questions = it.data?.questions?:emptyList(),isLoading = false)
+                    _state.value = _state.value.copy(questions = it.data?:emptyList(),isLoading = false)
                     getNewQuestion()
                 }
             }
@@ -120,7 +120,7 @@ class QuizViewModel @Inject constructor(
             println(currentQuestion.difficulty)
             return currentQuestion
         }
-       return Question("","","",listOf(),"","")
+       return Question("","","",listOf(),"")
     }
 
     fun rightAnswer(){
@@ -161,7 +161,7 @@ class QuizViewModel @Inject constructor(
 
         _state.value= _state.value.copy(
             questions  = emptyList(),
-            currentQuestion  = Question("","","",listOf(),"",""),
+            currentQuestion  = Question("","","",listOf(),""),
             selectedAnswer  = null,
             answerList  = arrayListOf(),
             currentQuestionCount  = 0,

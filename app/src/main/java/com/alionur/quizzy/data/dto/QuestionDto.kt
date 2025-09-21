@@ -1,13 +1,14 @@
 package com.alionur.quizzy.data.dto
 
-import com.google.gson.annotations.SerializedName
-
 data class QuestionDto(
     val category: String,
-    val correct_answer: String,
+    val correctAnswer: String,
     val difficulty: String,
-    val incorrect_answers: List<String>,
-    @SerializedName("question")
-    val questionString: String,
+    val id: String,
+    val incorrectAnswers: List<String>,
+    val isNiche: Boolean,
+    val question: String,
+    val regions: List<Any>,
+    val tags: List<String>,
     val type: String
 )

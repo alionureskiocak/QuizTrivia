@@ -2,6 +2,7 @@ package com.alionur.quizzy.presentation.ui.quiz
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,6 +13,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Refresh
+// import androidx.compose.material.icons.rounded.Check // KALDIRILDI
+// import androidx.compose.material.icons.rounded.Close // KALDIRILDI
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -21,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalConfiguration
@@ -37,6 +41,7 @@ import com.alionur.quizzy.data.model.Difficulty
 import kotlinx.coroutines.delay
 import com.alionur.quizzy.data.model.Screen
 import com.alionur.quizzy.R
+import com.alionur.quizzy.presentation.ui.main.ParticleBackground
 
 // Responsive utility functions
 @Composable
@@ -69,9 +74,9 @@ private fun getResponsiveDimensions(): ResponsiveDimensions {
             answerFontSize = 14.sp,
             titleFontSize = 14.sp,
             valueFontSize = 16.sp,
-            cardRadius = 12.dp,
-            statCardHeight = 55.dp,
-            jokerHeight = 45.dp,
+            cardRadius = 16.dp,
+            statCardHeight = 60.dp,
+            jokerHeight = 48.dp,
             answerPadding = 12.dp,
             questionPadding = 16.dp
         )
@@ -83,9 +88,9 @@ private fun getResponsiveDimensions(): ResponsiveDimensions {
             answerFontSize = 15.sp,
             titleFontSize = 12.sp,
             valueFontSize = 18.sp,
-            cardRadius = 16.dp,
-            statCardHeight = 60.dp,
-            jokerHeight = 50.dp,
+            cardRadius = 20.dp,
+            statCardHeight = 65.dp,
+            jokerHeight = 52.dp,
             answerPadding = 16.dp,
             questionPadding = 20.dp
         )
@@ -97,8 +102,8 @@ private fun getResponsiveDimensions(): ResponsiveDimensions {
             answerFontSize = 16.sp,
             titleFontSize = 14.sp,
             valueFontSize = 20.sp,
-            cardRadius = 20.dp,
-            statCardHeight = 65.dp,
+            cardRadius = 24.dp,
+            statCardHeight = 70.dp,
             jokerHeight = 56.dp,
             answerPadding = 20.dp,
             questionPadding = 24.dp
@@ -128,7 +133,6 @@ fun ConfettiAnimation(modifier: Modifier = Modifier) {
         composition = composition,
         iterations = LottieConstants.IterateForever
     )
-
     LottieAnimation(
         composition = composition,
         progress = { progress },
@@ -155,7 +159,6 @@ fun QuizScreen(navController : NavHostController,viewModel: QuizViewModel = hilt
     var showDialog by remember { mutableStateOf(false) }
     var isFirstLaunch by rememberSaveable { mutableStateOf(true) }
     var isGameFinished by remember { mutableStateOf(false) }
-    println(currentQuestion.difficulty)
     val dimensions = getResponsiveDimensions()
 
     val visibleAnswers = answerList.filter {
@@ -215,27 +218,26 @@ fun QuizScreen(navController : NavHostController,viewModel: QuizViewModel = hilt
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                // DEĞİŞİKLİK: Mavi tonlarında dikey gradient arka plan
                 .background(
                     if (isDarkTheme) {
                         Brush.verticalGradient(
                             colors = listOf(
-                                Color(0xFF0F0F23),
-                                Color(0xFF1A1A2E),
-                                Color(0xFF16213E)
+                                Color(0xFF1B2C42), // Koyu mavi
+                                Color(0xFF101C2F)  // Daha koyu, neredeyse siyah mavi
                             )
                         )
                     } else {
                         Brush.verticalGradient(
                             colors = listOf(
-                                Color(0xFFF8F9FA),
-                                Color(0xFFE9ECEF),
-                                Color(0xFFDEE2E6)
+                                Color(0xFFE8EAF6),
+                                Color(0xFFFFFFFF)
                             )
                         )
                     }
                 )
         ) {
-            // Subtle confetti animation
+            ParticleBackground(number = 20)
             if (selectedAnswer == correctAnswer && selectedAnswer != null) {
                 ConfettiAnimation(modifier = Modifier.matchParentSize())
             }
@@ -243,29 +245,27 @@ fun QuizScreen(navController : NavHostController,viewModel: QuizViewModel = hilt
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
                     .padding(horizontal = dimensions.horizontalPadding)
-                    .navigationBarsPadding() // <— alt çubuğa çakışmayı engelle
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(dimensions.cardSpacing)
+                    .padding(bottom = dimensions.statCardHeight + dimensions.verticalPadding * 2),
+                verticalArrangement = Arrangement.spacedBy(dimensions.cardSpacing / 2)
             ) {
-                // Top spacing
                 Spacer(modifier = Modifier.height(dimensions.verticalPadding))
-
-                // Modern Progress Bar — 0/10’dan başlat
                 ModernProgressBar(
                     progress = ((questionNumber).coerceIn(0, 10)) / 10f,
                     questionNumber = questionNumber,
                     dimensions = dimensions
                 )
 
-                // Question Card
+                Spacer(modifier = Modifier.height(dimensions.cardSpacing * 1.5f))
+
                 ModernQuestionCard(
-                    question = currentQuestion.questionString,
-                    questionNumber = questionNumber,
+                    question = currentQuestion.question,
                     dimensions = dimensions
                 )
 
-                // Answer Cards
+                Spacer(modifier = Modifier.height(dimensions.verticalPadding))
+
                 Column(verticalArrangement = Arrangement.spacedBy(dimensions.cardSpacing)) {
                     visibleAnswers.forEachIndexed { index, answer ->
                         ModernAnswerCard(
@@ -284,8 +284,6 @@ fun QuizScreen(navController : NavHostController,viewModel: QuizViewModel = hilt
                         )
                     }
                 }
-
-                // Joker Button (güncellendi)
                 ModernJokerButton(
                     jokerCount = jokerCount,
                     fiftyJokerEnabled = fiftyJokerEnabled,
@@ -297,24 +295,25 @@ fun QuizScreen(navController : NavHostController,viewModel: QuizViewModel = hilt
                         fiftyJokerEnabled = true
                     }
                 )
-
-                // Push content up and stats to bottom
-                Spacer(modifier = Modifier.weight(1f))
-
-                // Stats at the bottom
-                ModernBottomStats(
-                    timeLeft = timeLeft,
-                    correctQuestionCount = correctQuestionCount,
-                    questionNumber = questionNumber,
-                    dimensions = dimensions
-                )
-
-                // Bottom spacing
-                Spacer(modifier = Modifier.height(dimensions.verticalPadding))
+                Spacer(modifier = Modifier.height(dimensions.cardSpacing))
             }
+
+            ModernBottomStats(
+                timeLeft = timeLeft,
+                correctQuestionCount = correctQuestionCount,
+                questionNumber = questionNumber,
+                dimensions = dimensions,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .padding(horizontal = dimensions.horizontalPadding)
+                    .padding(bottom = dimensions.verticalPadding)
+                    .navigationBarsPadding()
+            )
         }
     }
 }
+
 
 @Composable
 private fun ModernProgressBar(
@@ -322,12 +321,12 @@ private fun ModernProgressBar(
     questionNumber: Int,
     dimensions: ResponsiveDimensions
 ) {
+    val isDarkTheme = !MaterialTheme.colorScheme.surface.luminance().let { it > 0.5f }
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
         animationSpec = tween(800, easing = FastOutSlowInEasing),
         label = "progressAnimation"
     )
-
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -342,25 +341,25 @@ private fun ModernProgressBar(
         ) { qNum ->
             Text(
                 text = "Question $qNum of 10",
-                fontSize = dimensions.titleFontSize,
-                fontWeight = FontWeight.SemiBold,
-                color = if (!MaterialTheme.colorScheme.surface.luminance().let { it > 0.5f })
-                    Color.White.copy(alpha = 0.8f) else Color.Black.copy(alpha = 0.7f)
+                style = MaterialTheme.typography.titleSmall,
+                color = if (isDarkTheme) Color.White.copy(alpha = 0.8f)
+                else MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
         Card(
-            shape = RoundedCornerShape(50.dp),
+            shape = CircleShape,
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                // DEĞİŞİKLİK: ProgressBar arkaplanı koyu mavi
+                containerColor = if (isDarkTheme) Color(0xFF2C3E50) else MaterialTheme.colorScheme.surfaceContainer
             ),
             modifier = Modifier.fillMaxWidth()
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(6.dp)
-                    .clip(RoundedCornerShape(50.dp))
+                    .height(8.dp)
+                    .clip(CircleShape)
             ) {
                 Box(
                     modifier = Modifier
@@ -369,9 +368,8 @@ private fun ModernProgressBar(
                         .background(
                             Brush.linearGradient(
                                 colors = listOf(
-                                    MaterialTheme.colorScheme.primary,
-                                    MaterialTheme.colorScheme.secondary,
-                                    MaterialTheme.colorScheme.tertiary
+                                    Color(0xFF3498DB), // Canlı mavi
+                                    Color(0xFF2980B9)  // Daha koyu mavi
                                 )
                             )
                         )
@@ -384,7 +382,6 @@ private fun ModernProgressBar(
 @Composable
 private fun ModernQuestionCard(
     question: String,
-    questionNumber: Int,
     dimensions: ResponsiveDimensions
 ) {
     val isDarkTheme = !MaterialTheme.colorScheme.surface.luminance().let { it > 0.5f }
@@ -393,10 +390,10 @@ private fun ModernQuestionCard(
         targetState = question,
         transitionSpec = {
             fadeIn(tween(400)) + slideInHorizontally(
-                initialOffsetX = { it / 3 },
+                initialOffsetX = { it },
                 animationSpec = tween(400, easing = FastOutSlowInEasing)
             ) togetherWith fadeOut(tween(200)) + slideOutHorizontally(
-                targetOffsetX = { -it / 3 },
+                targetOffsetX = { -it },
                 animationSpec = tween(200)
             )
         },
@@ -405,15 +402,25 @@ private fun ModernQuestionCard(
         Card(
             shape = RoundedCornerShape(dimensions.cardRadius),
             colors = CardDefaults.cardColors(
-                containerColor = if (isDarkTheme)
-                    Color.White.copy(alpha = 0.08f) else Color.White.copy(alpha = 0.9f)
+                // DEĞİŞİKLİK: Koyu temada soru kartı için belirgin bir mavi tonu
+                containerColor = if (isDarkTheme) {
+                    Color(0xFF2C405A) // Orta koyu mavi
+                } else {
+                    MaterialTheme.colorScheme.surface
+                }
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+            border = if (!isDarkTheme) {
+                BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+            } else {
+                null
+            },
+            elevation = CardDefaults.cardElevation(defaultElevation = if (isDarkTheme) 4.dp else 2.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .heightIn(min = 120.dp)
                     .padding(dimensions.questionPadding),
                 contentAlignment = Alignment.Center
             ) {
@@ -423,7 +430,8 @@ private fun ModernQuestionCard(
                     fontWeight = FontWeight.SemiBold,
                     lineHeight = (dimensions.questionFontSize.value + 6).sp,
                     textAlign = TextAlign.Center,
-                    color = if (isDarkTheme) Color.White else Color.Black
+                    color = if (isDarkTheme) Color.White.copy(alpha = 0.9f)
+                    else Color.Black.copy(alpha = 0.87f)
                 )
             }
         }
@@ -443,16 +451,30 @@ private fun ModernAnswerCard(
 ) {
     val isDarkTheme = !MaterialTheme.colorScheme.surface.luminance().let { it > 0.5f }
 
-    // Card ve iç katmanlar için tek renk
+    // DEĞİŞİKLİK: Koyu temadaki varsayılan cevap kartı rengi, soru kartından biraz daha açık mavi
+    val defaultContainerColor = if (isDarkTheme) Color(0xFF3A506E) else MaterialTheme.colorScheme.surface
+
     val bgColor by animateColorAsState(
         targetValue = when {
-            selectedAnswer == null -> if (isDarkTheme) Color.White.copy(alpha = 0.08f) else Color.White.copy(alpha = 0.9f)
-            isCorrect -> Color(0xFF4CAF50)
-            isSelected && !isCorrect -> Color(0xFFE57373)
-            else -> if (isDarkTheme) Color.White.copy(alpha = 0.05f) else Color.Gray.copy(alpha = 0.25f)
+            selectedAnswer == null -> defaultContainerColor
+            isCorrect -> Color(0xFF2ECC71) // Canlı yeşil (doğru cevap)
+            isSelected && !isCorrect -> Color(0xFFE74C3C) // Canlı kırmızı (yanlış cevap)
+            else -> if (isDarkTheme) Color(0xFF4A6581) else Color(0xFFF5F5F5) // Seçili değil ama yanlışsa bir tık daha koyu
         },
         animationSpec = tween(300),
         label = "answerCardColor"
+    )
+
+    val contentColor by animateColorAsState(
+        targetValue = when {
+            selectedAnswer == null -> if (isDarkTheme) Color.White.copy(alpha = 0.85f)
+            else Color.Black.copy(alpha = 0.87f)
+            isCorrect || (isSelected && !isCorrect) -> Color.White
+            else -> if (isDarkTheme) Color.White.copy(alpha = 0.6f)
+            else MaterialTheme.colorScheme.onSurfaceVariant
+        },
+        animationSpec = tween(300),
+        label = "answerContentColor"
     )
 
     val scale by animateFloatAsState(
@@ -466,10 +488,13 @@ private fun ModernAnswerCard(
 
     Card(
         shape = RoundedCornerShape(dimensions.cardRadius),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSelected) 8.dp else 4.dp
-        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 6.dp else 2.dp),
         colors = CardDefaults.cardColors(containerColor = bgColor),
+        border = if (!isDarkTheme && selectedAnswer == null) {
+            BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+        } else {
+            null
+        },
         modifier = Modifier
             .fillMaxWidth()
             .graphicsLayer {
@@ -480,54 +505,44 @@ private fun ModernAnswerCard(
                 enabled = selectedAnswer == null && timeLeft > 0
             ) { onAnswerClick() }
     ) {
-        Box(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(bgColor) // İç katmanı Card ile eşleştirdik
                 .padding(dimensions.answerPadding),
-            contentAlignment = Alignment.CenterStart
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(
+                        when {
+                            selectedAnswer != null -> Color.White.copy(alpha = 0.2f)
+                            isDarkTheme -> Color(0xFF5A7596) // Harf kutusunu da belirginleştirdik
+                            else -> MaterialTheme.colorScheme.surfaceVariant
+                        }
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                // Option Circle
-                val circleSize = when (getScreenSizeCategory()) {
-                    ScreenSizeCategory.SMALL -> 24.dp
-                    ScreenSizeCategory.MEDIUM -> 28.dp
-                    ScreenSizeCategory.LARGE -> 32.dp
-                }
-
-                Box(
-                    modifier = Modifier
-                        .size(circleSize)
-                        .background(bgColor, CircleShape), // Circle da aynı renk
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = ('A' + index).toString(),
-                        fontSize = (dimensions.answerFontSize.value - 2).sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isDarkTheme) Color.White else Color.Black
-                    )
-                }
-
                 Text(
-                    text = answer,
-                    fontSize = dimensions.answerFontSize,
-                    fontWeight = FontWeight.Medium,
-                    color = when {
-                        selectedAnswer == null -> if (isDarkTheme) Color.White else Color.Black
-                        isCorrect -> Color.White
-                        isSelected && !isCorrect -> Color.White
-                        else -> if (isDarkTheme) Color.White.copy(alpha = 0.6f) else Color.Black.copy(alpha = 0.6f)
-                    },
-                    modifier = Modifier.weight(1f)
+                    text = ('A' + index).toString(),
+                    fontWeight = FontWeight.Bold,
+                    color = contentColor
                 )
             }
+            Text(
+                text = answer,
+                fontSize = dimensions.answerFontSize,
+                fontWeight = FontWeight.Medium,
+                color = contentColor,
+                modifier = Modifier.weight(1f)
+            )
+            // DEĞİŞİKLİK: Animasyonlu Doğru/Yanlış İkonu kaldırıldı.
         }
     }
 }
+
 
 @Composable
 private fun ModernJokerButton(
@@ -541,7 +556,6 @@ private fun ModernJokerButton(
     val enabled = jokerCount > 0 && !fiftyJokerEnabled && timeLeft > 0 && selectedAnswer == null
     val isDarkTheme = !MaterialTheme.colorScheme.surface.luminance().let { it > 0.5f }
 
-    // Hafif pulse animasyonu sadece aktifken
     val pulse by animateFloatAsState(
         targetValue = if (enabled) 1.02f else 1f,
         animationSpec = infiniteRepeatable(
@@ -551,112 +565,102 @@ private fun ModernJokerButton(
         label = "jokerPulse"
     )
 
-    val enabledGradient = Brush.horizontalGradient(
-        listOf(
-            MaterialTheme.colorScheme.primary,
-            MaterialTheme.colorScheme.secondary,
-            MaterialTheme.colorScheme.tertiary
-        )
+    val containerColor by animateColorAsState(
+        targetValue = if (enabled) {
+            // DEĞİŞİKLİK: Koyu temada joker butonu için canlı mavi
+            if (isDarkTheme) Color(0xFF3498DB) else MaterialTheme.colorScheme.primary
+        } else {
+            // DEĞİŞİKLİK: Pasif joker butonu için daha belirgin bir koyu mavi tonu
+            if (isDarkTheme) Color(0xFF4A6581) else MaterialTheme.colorScheme.surfaceContainer
+        },
+        label = "jokerContainerColor"
     )
-    val disabledColor = if (isDarkTheme) Color.White.copy(alpha = 0.08f) else Color.Black.copy(alpha = 0.06f)
 
+    val contentColor by animateColorAsState(
+        targetValue = if (enabled) {
+            Color.White
+        } else {
+            if (isDarkTheme) Color.White.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+        },
+        label = "jokerContentColor"
+    )
+    Spacer(Modifier.width(8.dp))
     Card(
         shape = RoundedCornerShape(dimensions.cardRadius),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (enabled) 8.dp else 2.dp
-        ),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (enabled) 4.dp else 1.dp),
         modifier = Modifier
             .fillMaxWidth()
+            .height(dimensions.jokerHeight)
             .scale(pulse)
             .clickable(enabled = enabled) { onJokerClick() }
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(dimensions.jokerHeight)
-                .clip(RoundedCornerShape(dimensions.cardRadius))
-                .background(
-                    if (enabled) enabledGradient
-                    else Brush.linearGradient(listOf(disabledColor, disabledColor))
-                )
-                .padding(horizontal = 16.dp),
-            contentAlignment = Alignment.Center
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                // Emoji kullandım ki ikon bağımlılığı sıkıntı çıkarmasın
-                Text(
-                    text = if (enabled) "⚡ 50/50" else "50/50",
-                    fontSize = dimensions.answerFontSize,
-                    fontWeight = FontWeight.Bold,
-                    color = if (enabled) Color.White else {
-                        if (isDarkTheme) Color.White.copy(alpha = 0.6f) else Color.Black.copy(alpha = 0.6f)
-                    }
-                )
-                Spacer(Modifier.width(8.dp))
-                // Counter pill
-                Box(
-                    modifier = Modifier
-                        .height((dimensions.answerFontSize.value + 8).dp)
-                        .clip(RoundedCornerShape(50))
-                        .background(
-                            if (enabled) Color.White.copy(alpha = 0.2f)
-                            else Color.Black.copy(alpha = 0.08f)
-                        )
-                        .padding(horizontal = 10.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "x$jokerCount",
-                        fontSize = (dimensions.answerFontSize.value - 2).sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (enabled) Color.White else {
-                            if (isDarkTheme) Color.White.copy(alpha = 0.7f) else Color.Black.copy(alpha = 0.55f)
-                        }
+            Text(
+                text = "⚡ 50/50",
+                fontSize = dimensions.answerFontSize,
+                fontWeight = FontWeight.Bold,
+                color = contentColor
+            )
+            Spacer(Modifier.width(8.dp))
+            Box(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(
+                        if (enabled) {
+                            if (isDarkTheme) Color.White.copy(alpha = 0.2f) else Color.White.copy(
+                                alpha = 0.25f
+                            )
+                        } else if (isDarkTheme) Color.White.copy(alpha = 0.1f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
-                }
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "x$jokerCount",
+                    fontSize = (dimensions.answerFontSize.value - 2).sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = contentColor
+                )
             }
         }
     }
 }
+
 
 @Composable
 private fun ModernBottomStats(
     timeLeft: Int,
     correctQuestionCount: Int,
     questionNumber: Int,
-    dimensions: ResponsiveDimensions
+    dimensions: ResponsiveDimensions,
+    modifier: Modifier = Modifier
 ) {
-    val isDarkTheme = !MaterialTheme.colorScheme.surface.luminance().let { it > 0.5f }
+    val totalTimeForQuestion = 15f
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(dimensions.cardSpacing)
     ) {
-        // Timer Card
         ModernStatCard(
             title = "Time",
             value = "${timeLeft}s",
-            isUrgent = timeLeft <= 3,
-            isDarkTheme = isDarkTheme,
+            isUrgent = timeLeft <= 5,
             dimensions = dimensions,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            progress = timeLeft / totalTimeForQuestion
         )
-
-        // Score Card — toplamı anında questionNumber olarak göster
         ModernStatCard(
             title = "Score",
-            value = "$correctQuestionCount/${maxOf(1, questionNumber)-1}",
+            value = "$correctQuestionCount/${maxOf(1, questionNumber) - 1}",
             isUrgent = false,
-            isDarkTheme = isDarkTheme,
             dimensions = dimensions,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            progress = null
         )
     }
 }
@@ -666,10 +670,12 @@ private fun ModernStatCard(
     title: String,
     value: String,
     isUrgent: Boolean,
-    isDarkTheme: Boolean,
     dimensions: ResponsiveDimensions,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    progress: Float? = null
 ) {
+    val isDarkTheme = !MaterialTheme.colorScheme.surface.luminance().let { it > 0.5f }
+
     val scale by animateFloatAsState(
         targetValue = if (isUrgent) 1.05f else 1f,
         animationSpec = spring(
@@ -681,45 +687,65 @@ private fun ModernStatCard(
     Card(
         shape = RoundedCornerShape(dimensions.cardRadius),
         colors = CardDefaults.cardColors(
-            containerColor = if (isDarkTheme) Color.White.copy(alpha = 0.12f)
-            else Color.White.copy(alpha = 0.95f)
+            // DEĞİŞİKLİK: Koyu temada stat kartları için belirgin bir mavi tonu
+            containerColor = if (isDarkTheme) {
+                Color(0xFF2C405A) // Orta koyu mavi
+            } else {
+                MaterialTheme.colorScheme.surface
+            }
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        border = if (!isDarkTheme) {
+            BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+        } else {
+            null
+        },
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = modifier
             .scale(scale)
             .height(dimensions.statCardHeight)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .padding(horizontal = 8.dp, vertical = 6.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
         ) {
-            Text(
-                text = title,
-                fontSize = dimensions.titleFontSize,
-                fontWeight = FontWeight.Medium,
-                color = if (isDarkTheme) Color.White.copy(alpha = 0.8f)
-                else Color.Black.copy(alpha = 0.7f),
-                maxLines = 1
-            )
-
-            AnimatedContent(
-                targetState = value,
-                transitionSpec = { fadeIn() togetherWith fadeOut() },
-                label = "valueTransition"
-            ) { animatedValue ->
-                Text(
-                    text = animatedValue,
-                    fontSize = dimensions.valueFontSize,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isUrgent) Color(0xFFE57373) else {
-                        if (isDarkTheme) Color.White else Color.Black
-                    },
-                    maxLines = 1
+            if (progress != null) {
+                val animatedProgress by animateFloatAsState(
+                    targetValue = progress,
+                    animationSpec = tween(1000),
+                    label = "progress"
                 )
+                CircularProgressIndicator(
+                    progress = { animatedProgress },
+                    modifier = Modifier.size(dimensions.statCardHeight - 12.dp),
+                    color = if (isUrgent) Color(0xFFE74C3C) else Color(0xFF3498DB), // Canlı kırmızı/mavi
+                    strokeWidth = 2.5.dp
+                )
+            }
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = if (isDarkTheme) Color.White.copy(alpha = 0.75f)
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                AnimatedContent(
+                    targetState = value,
+                    transitionSpec = { fadeIn() togetherWith fadeOut() },
+                    label = "valueTransition"
+                ) { animatedValue ->
+                    Text(
+                        text = animatedValue,
+                        fontSize = dimensions.valueFontSize,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isUrgent) Color(0xFFE74C3C) // Canlı kırmızı
+                        else if (isDarkTheme) Color.White
+                        else Color.Black.copy(alpha = 0.87f),
+                        maxLines = 1
+                    )
+                }
             }
         }
     }
@@ -735,13 +761,14 @@ private fun ModernStartingScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            // DEĞİŞİKLİK: Koyu temada yükleme ekranı gradienti
             .background(
                 if (isDarkTheme) {
                     Brush.verticalGradient(
                         colors = listOf(
-                            Color(0xFF0F0F23),
-                            Color(0xFF1A1A2E),
-                            Color(0xFF16213E)
+                            Color(0xFF1B2C42),
+                            Color(0xFF101C2F),
+                            Color(0xFF0C1726)
                         )
                     )
                 } else {
@@ -783,7 +810,7 @@ private fun ModernStartingScreen(
                 text = "Loading Questions...",
                 fontSize = dimensions.questionFontSize,
                 fontWeight = FontWeight.SemiBold,
-                color = if (isDarkTheme) Color.White.copy(alpha = 0.8f)
+                color = if (isDarkTheme) Color.White.copy(alpha = 0.85f)
                 else Color.Black.copy(alpha = 0.7f)
             )
         }
@@ -798,8 +825,6 @@ private fun ModernCustomDialog(
     score: Int,
     dimensions: ResponsiveDimensions
 ) {
-    val isDarkTheme = !MaterialTheme.colorScheme.surface.luminance().let { it > 0.5f }
-
     AlertDialog(
         onDismissRequest = { onDismiss() },
         confirmButton = {
@@ -810,8 +835,9 @@ private fun ModernCustomDialog(
                 },
                 shape = RoundedCornerShape(dimensions.cardRadius),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = MaterialTheme.colorScheme.primary
+                    // DEĞİŞİKLİK: Diyalog butonları da mavi tonlarında
+                    containerColor = Color(0xFF3498DB),
+                    contentColor = Color.White
                 ),
                 modifier = Modifier.height(dimensions.jokerHeight)
             ) {
@@ -830,6 +856,11 @@ private fun ModernCustomDialog(
                     onGoToMainMenu()
                     onDismiss() },
                 shape = RoundedCornerShape(dimensions.cardRadius),
+                // DEĞİŞİKLİK: Diyalog butonları da mavi tonlarında
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = Color(0xFF3498DB)
+                ),
+                border = BorderStroke(1.dp, Color(0xFF3498DB)),
                 modifier = Modifier.height(dimensions.jokerHeight)
             ) {
                 Row(
@@ -854,21 +885,15 @@ private fun ModernCustomDialog(
                     .background(
                         Brush.linearGradient(
                             colors = listOf(
-                                MaterialTheme.colorScheme.primary,
-                                MaterialTheme.colorScheme.secondary
+                                Color(0xFF3498DB),
+                                Color(0xFF2980B9)
                             )
                         ),
                         CircleShape
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                // Trophy icon burada istersen açarsın
-                // Icon(
-                //     imageVector = Icons.Filled.EmojiEvents,
-                //     contentDescription = "Trophy",
-                //     tint = Color.White,
-                //     modifier = Modifier.size(24.dp)
-                // )
+                // Icon... (Buraya bir Quiz iconu gelebilir)
             }
         },
         title = {
@@ -891,13 +916,13 @@ private fun ModernCustomDialog(
                 Text(
                     "Your Final Score:",
                     fontSize = dimensions.answerFontSize,
-                    color = if (isDarkTheme) Color.White.copy(alpha = 0.8f) else Color.Black.copy(alpha = 0.8f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     "$score / 10",
                     fontSize = dimensions.valueFontSize,
                     fontWeight = FontWeight.Bold,
-                    color = if (isDarkTheme) Color.White else Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }

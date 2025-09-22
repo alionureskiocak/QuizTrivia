@@ -106,7 +106,7 @@ fun ParticleBackground(modifier: Modifier = Modifier,number : Int) {
             }
 
             trigger.value++
-            delay(16) // ~60 FPS
+            delay(16)
         }
     }
 
@@ -311,10 +311,7 @@ fun MainScreenContent(navController: NavHostController) {
     }
 }
 
-//ModernCard + Grid fonksiyonları aynen buraya eklenir
-// (Senin daha önce verdiğin kodla birebir)
 
-// Küçük, yuvarlak ve cam efekti ile temaya uygun buton
 @RequiresApi(Build.VERSION_CODES.HONEYCOMB_MR2)
 @Composable
 fun GlassButton(
@@ -335,12 +332,12 @@ fun GlassButton(
         label = "buttonScale"
     )
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
-    val topPadding = screenHeight * 0.03f // ekranın %6'sı kadar boşluk
+    val topPadding = screenHeight * 0.03f
     Card(
         modifier = modifier
             .scale(scale)
             .padding(top = topPadding)
-            .size(40.dp) // Küçük boyut
+            .size(40.dp)
             .clip(CircleShape)
             .clickable(
                 interactionSource = interaction,
@@ -521,11 +518,11 @@ fun ModernCategoryGrid(
         )
 
         Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-            // MODIFIED ROW: Added .height(IntrinsicSize.Min)
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(IntrinsicSize.Min), // ADDED: This makes the row's height adapt to the tallest child
+                    .height(IntrinsicSize.Min),
                 horizontalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 ModernCard(
@@ -536,10 +533,10 @@ fun ModernCategoryGrid(
                         Color(0xFF4FACFE),
                         Color(0xFF00F2FE)
                     ),
-                    // MODIFIED MODIFIER: Removed fixed height, added fillMaxHeight
+
                     modifier = Modifier
                         .weight(1f)
-                        .fillMaxHeight(), // CHANGED: from .height(180.dp)
+                        .fillMaxHeight(),
                     onClick = { onCategorySelected(Category.GENERAL_KNOWLEDGE) }
                 )
                 ModernCard(
@@ -550,18 +547,18 @@ fun ModernCategoryGrid(
                         Color(0xFF667EEA),
                         Color(0xFF764BA2)
                     ),
-                    // MODIFIED MODIFIER: Removed fixed height, added fillMaxHeight
+
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight(), // CHANGED: from .height(180.dp)
                     onClick = { onCategorySelected(Category.FILM_AND_TV) }
                 )
             }
-            // MODIFIED ROW: Added .height(IntrinsicSize.Min)
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(IntrinsicSize.Min), // ADDED: This makes the row's height adapt to the tallest child
+                    .height(IntrinsicSize.Min),
                 horizontalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 ModernCard(
@@ -572,10 +569,10 @@ fun ModernCategoryGrid(
                         Color(0xFF43E97B),
                         Color(0xFF38F9D7)
                     ),
-                    // MODIFIED MODIFIER: Removed fixed height, added fillMaxHeight
+
                     modifier = Modifier
                         .weight(1f)
-                        .fillMaxHeight(), // CHANGED: from .height(180.dp)
+                        .fillMaxHeight(),
                     onClick = { onCategorySelected(Category.GEOGRAPHY_AND_HISTORY) }
                 )
                 ModernCard(
@@ -586,10 +583,10 @@ fun ModernCategoryGrid(
                         Color(0xFFFA709A),
                         Color(0xFFFEE140)
                     ),
-                    // MODIFIED MODIFIER: Removed fixed height, added fillMaxHeight
+
                     modifier = Modifier
                         .weight(1f)
-                        .fillMaxHeight(), // CHANGED: from .height(180.dp)
+                        .fillMaxHeight(),
                     onClick = { onCategorySelected(Category.SPORT_AND_LEISURE) }
                 )
             }
@@ -597,7 +594,7 @@ fun ModernCategoryGrid(
     }
 }
 
-// ModernCard
+
 @Composable
 fun ModernCard(
     icon: String,
@@ -656,7 +653,7 @@ fun ModernCard(
                     style = MaterialTheme.typography.titleMedium.copy(
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
-                        lineHeight = 22.sp, // kesilmeyi engelle
+                        lineHeight = 22.sp,
                         shadow = Shadow(
                             color = Color.Black.copy(alpha = 0.25f),
                             offset = Offset(2f, 2f),
@@ -679,7 +676,7 @@ fun ModernCard(
     }
 }
 
-// İnternet kontrolü
+
 @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
 fun Context.isInternetAvailable(): Boolean {
     val connectivityManager =

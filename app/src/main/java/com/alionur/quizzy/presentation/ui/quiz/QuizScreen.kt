@@ -13,8 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Refresh
-// import androidx.compose.material.icons.rounded.Check // KALDIRILDI
-// import androidx.compose.material.icons.rounded.Close // KALDIRILDI
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -43,7 +41,7 @@ import com.alionur.quizzy.data.model.Screen
 import com.alionur.quizzy.R
 import com.alionur.quizzy.presentation.ui.main.ParticleBackground
 
-// Responsive utility functions
+
 @Composable
 private fun getScreenSizeCategory(): ScreenSizeCategory {
     val configuration = LocalConfiguration.current
@@ -218,13 +216,13 @@ fun QuizScreen(navController : NavHostController,viewModel: QuizViewModel = hilt
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                // DEĞİŞİKLİK: Mavi tonlarında dikey gradient arka plan
+
                 .background(
                     if (isDarkTheme) {
                         Brush.verticalGradient(
                             colors = listOf(
-                                Color(0xFF1B2C42), // Koyu mavi
-                                Color(0xFF101C2F)  // Daha koyu, neredeyse siyah mavi
+                                Color(0xFF1B2C42),
+                                Color(0xFF101C2F)
                             )
                         )
                     } else {
@@ -350,7 +348,7 @@ private fun ModernProgressBar(
         Card(
             shape = CircleShape,
             colors = CardDefaults.cardColors(
-                // DEĞİŞİKLİK: ProgressBar arkaplanı koyu mavi
+
                 containerColor = if (isDarkTheme) Color(0xFF2C3E50) else MaterialTheme.colorScheme.surfaceContainer
             ),
             modifier = Modifier.fillMaxWidth()
@@ -368,8 +366,8 @@ private fun ModernProgressBar(
                         .background(
                             Brush.linearGradient(
                                 colors = listOf(
-                                    Color(0xFF3498DB), // Canlı mavi
-                                    Color(0xFF2980B9)  // Daha koyu mavi
+                                    Color(0xFF3498DB),
+                                    Color(0xFF2980B9)
                                 )
                             )
                         )
@@ -402,9 +400,9 @@ private fun ModernQuestionCard(
         Card(
             shape = RoundedCornerShape(dimensions.cardRadius),
             colors = CardDefaults.cardColors(
-                // DEĞİŞİKLİK: Koyu temada soru kartı için belirgin bir mavi tonu
+
                 containerColor = if (isDarkTheme) {
-                    Color(0xFF2C405A) // Orta koyu mavi
+                    Color(0xFF2C405A)
                 } else {
                     MaterialTheme.colorScheme.surface
                 }
@@ -451,15 +449,15 @@ private fun ModernAnswerCard(
 ) {
     val isDarkTheme = !MaterialTheme.colorScheme.surface.luminance().let { it > 0.5f }
 
-    // DEĞİŞİKLİK: Koyu temadaki varsayılan cevap kartı rengi, soru kartından biraz daha açık mavi
+
     val defaultContainerColor = if (isDarkTheme) Color(0xFF3A506E) else MaterialTheme.colorScheme.surface
 
     val bgColor by animateColorAsState(
         targetValue = when {
             selectedAnswer == null -> defaultContainerColor
-            isCorrect -> Color(0xFF2ECC71) // Canlı yeşil (doğru cevap)
-            isSelected && !isCorrect -> Color(0xFFE74C3C) // Canlı kırmızı (yanlış cevap)
-            else -> if (isDarkTheme) Color(0xFF4A6581) else Color(0xFFF5F5F5) // Seçili değil ama yanlışsa bir tık daha koyu
+            isCorrect -> Color(0xFF2ECC71)
+            isSelected && !isCorrect -> Color(0xFFE74C3C)
+            else -> if (isDarkTheme) Color(0xFF4A6581) else Color(0xFFF5F5F5)
         },
         animationSpec = tween(300),
         label = "answerCardColor"
@@ -519,7 +517,7 @@ private fun ModernAnswerCard(
                     .background(
                         when {
                             selectedAnswer != null -> Color.White.copy(alpha = 0.2f)
-                            isDarkTheme -> Color(0xFF5A7596) // Harf kutusunu da belirginleştirdik
+                            isDarkTheme -> Color(0xFF5A7596)
                             else -> MaterialTheme.colorScheme.surfaceVariant
                         }
                     ),
@@ -538,7 +536,7 @@ private fun ModernAnswerCard(
                 color = contentColor,
                 modifier = Modifier.weight(1f)
             )
-            // DEĞİŞİKLİK: Animasyonlu Doğru/Yanlış İkonu kaldırıldı.
+
         }
     }
 }
@@ -567,10 +565,10 @@ private fun ModernJokerButton(
 
     val containerColor by animateColorAsState(
         targetValue = if (enabled) {
-            // DEĞİŞİKLİK: Koyu temada joker butonu için canlı mavi
+
             if (isDarkTheme) Color(0xFF3498DB) else MaterialTheme.colorScheme.primary
         } else {
-            // DEĞİŞİKLİK: Pasif joker butonu için daha belirgin bir koyu mavi tonu
+
             if (isDarkTheme) Color(0xFF4A6581) else MaterialTheme.colorScheme.surfaceContainer
         },
         label = "jokerContainerColor"
@@ -687,9 +685,9 @@ private fun ModernStatCard(
     Card(
         shape = RoundedCornerShape(dimensions.cardRadius),
         colors = CardDefaults.cardColors(
-            // DEĞİŞİKLİK: Koyu temada stat kartları için belirgin bir mavi tonu
+
             containerColor = if (isDarkTheme) {
-                Color(0xFF2C405A) // Orta koyu mavi
+                Color(0xFF2C405A)
             } else {
                 MaterialTheme.colorScheme.surface
             }
@@ -761,7 +759,7 @@ private fun ModernStartingScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            // DEĞİŞİKLİK: Koyu temada yükleme ekranı gradienti
+
             .background(
                 if (isDarkTheme) {
                     Brush.verticalGradient(
@@ -856,7 +854,7 @@ private fun ModernCustomDialog(
                     onGoToMainMenu()
                     onDismiss() },
                 shape = RoundedCornerShape(dimensions.cardRadius),
-                // DEĞİŞİKLİK: Diyalog butonları da mavi tonlarında
+
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = Color(0xFF3498DB)
                 ),
@@ -893,7 +891,7 @@ private fun ModernCustomDialog(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                // Icon... (Buraya bir Quiz iconu gelebilir)
+
             }
         },
         title = {

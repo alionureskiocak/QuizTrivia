@@ -41,7 +41,7 @@ fun SettingsScreen(
             .padding(horizontal = 20.dp, vertical = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Başlık
+
         Text(
             text = "Settings",
             fontSize = 32.sp,
@@ -56,7 +56,7 @@ fun SettingsScreen(
             color = Color.White.copy(alpha = 0.6f)
         )
 
-        // Tema başlığı
+
         Text(
             text = "Choose Theme",
             fontSize = 20.sp,
@@ -66,7 +66,7 @@ fun SettingsScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Dark & Light kartları
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -95,7 +95,7 @@ fun SettingsScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // System seçeneği ayrı kart
+
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),

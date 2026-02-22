@@ -36,27 +36,6 @@ class QuizViewModel @Inject constructor(
 
     private var counterJob : Job? = null
 
-    fun startCounter(){
-        counterJob?.cancel()
-        _isCounting.value = true
-        _startCounter.value = 3
-        counterJob = viewModelScope.launch {
-            var counter = 3
-            while (counter>0){
-                flow {
-                    counter--
-                    delay(1000)
-                    emit(counter)
-                }.collect {
-                    _startCounter.value = it
-                }
-            }
-            counterJob?.cancel()
-            _isCounting.value = false
-            getNewQuestion()
-        }
-    }
-
 
     private val _timeLeft = MutableStateFlow(15)
     val timeLeft : StateFlow<Int> get() = _timeLeft
@@ -112,7 +91,7 @@ class QuizViewModel @Inject constructor(
            _state.value =  _state.value.copy(
                currentQuestion = currentQuestion,
                correctAnswer = currentQuestion.correctAnswer,
-               currentQuestionCount = questionCount
+               currentQuestionCount = questionCount,
                )
 
             shuffleAnswers()

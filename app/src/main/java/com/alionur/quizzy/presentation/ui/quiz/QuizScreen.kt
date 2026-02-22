@@ -179,6 +179,13 @@ fun QuizScreen(navController : NavHostController,viewModel: QuizViewModel = hilt
         }
     }
 
+    LaunchedEffect(timeLeft) {
+        if(timeLeft == 0){
+            viewModel.getNewQuestion()
+            fiftyJokerEnabled = false
+        }
+    }
+
     LaunchedEffect(isGameFinished) {
         if (isGameFinished) {
             viewModel.stopTimer()
